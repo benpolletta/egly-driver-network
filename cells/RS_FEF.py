@@ -93,9 +93,10 @@ if __name__=='__main__' :
     RS.h = '0.56'
     RS.m = '0.038'
     RS.mAR = '0.01'
-    RS.J='-1 * uA * cmeter ** -2'
+    RS.J='-5 * uA * cmeter ** -2'
 
-    
+    sig_ranRS=0.15* mamp * cm **-2*0
+    g_ranRS=0.03* msiemens * cm **-2*0
 #    Poisson_input = PoissonGroup(1,0.1/ms)
 #    in_syn = Synapses(Poisson_input, RS, on_pre='s_ran+=0.0001') #defaultclock.dt
 #    in_syn.connect(j='i')
