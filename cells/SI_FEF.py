@@ -8,8 +8,9 @@ defaultclock.dt = 0.01*ms
 eq_SI_FEF='''
 dV/dt=1/C_SI*(-J-Isyn-Igap-Iran-Iapp-IL-INa-IK-IAR-Iapp2) : volt
 J : amp * meter ** -2
-Isyn=IsynRS_FEF_VM+IsynSI_FEF_VM+IsynSI2_FEF_VM+IsynRS_FEF_V+IsynFS_FEF_V+Isyn_LIP+Isyn_mdPul : amp * meter ** -2
+Isyn=IsynRS_FEF_VM+IsynFS_FEF_VM+IsynSI_FEF_VM+IsynSI2_FEF_VM+IsynRS_FEF_V+IsynFS_FEF_V+Isyn_LIP+Isyn_mdPul : amp * meter ** -2
 IsynRS_FEF_VM : amp * meter ** -2
+IsynFS_FEF_VM : amp * meter ** -2
 IsynSI_FEF_VM : amp * meter ** -2
 IsynSI2_FEF_VM : amp * meter ** -2
 IsynRS_FEF_V : amp * meter ** -2
