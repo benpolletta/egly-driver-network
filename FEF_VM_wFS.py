@@ -13,7 +13,11 @@ from cells.FS_FEF import *
 from cells.SI_FEF import *
 from cells.VIP_FEF import *
 
-def generate_VM_wFS(theta_phase,J,gFSSI,gVIPSI,runtime):
+from FEF_and_LIP_parallel import save_raster
+
+import os
+
+def generate_VM_wFS(theta_phase,IappSI,gFSSI,gVIPSI,runtime):
     
     N_VIP,N_RS_gran,N_FS_gran,N_SI_gran=20,20,20,20
     
@@ -57,7 +61,7 @@ def generate_VM_wFS(theta_phase,J,gFSSI,gVIPSI,runtime):
     E_gran.mAR = '0.035+0.025*rand()'
 #    E_gran.J='30 * uA * cmeter ** -2'  #article SI=25, code=1
 #    E_gran.J='20 * uA * cmeter ** -2'  #article SI=25, code=1
-    E_gran.J=J+'* uA * cmeter ** -2'  #article SI=25, code=1
+    E_gran.J=str(IappSI)+'* uA * cmeter ** -2'  #article SI=25, code=1
     
     FS_gran=NeuronGroup(N_FS_gran,eq_FS_FEF,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     FS_gran.V = '-110*mvolt+10*rand()*mvolt'
@@ -156,8 +160,8 @@ def generate_VM_wFS(theta_phase,J,gFSSI,gVIPSI,runtime):
         t0=0*ms
         t1=Theta_pd/2
         inputs_topdown3=generate_spike_timing(N_VIP,fIB,t0,end_time=t1)
-        while t0+Theta_pd*ms<runtime:
-            t0,t1=t0+Theta_pd*ms,t1+Theta_pd*ms
+        while t0+Theta_pd<runtime:
+            t0,t1=t0+Theta_pd,t1+Theta_pd
             inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_VIP,fIB,t0,end_time=t1)))
     
     
@@ -182,7 +186,7 @@ def generate_VM_wFS(theta_phase,J,gFSSI,gVIPSI,runtime):
             fLIP=50*Hz
 #            fLIP=12*Hz
             bottomup=generate_spike_timing(N_SI_gran,fLIP,t0,end_time=t1)
-            while t0+Theta_pd*ms<runtime:
+            while t0+Theta_pd<runtime:
                 t0,t1=t0+Theta_pd/2,t1+Theta_pd/2
                 fLIP=50*Hz*int(fLIP==13*Hz)+13*Hz*int(fLIP==50*Hz)
                 bottomup=vstack((bottomup,generate_spike_timing(N_SI_gran,fLIP,t0,end_time=t1)))
@@ -230,19 +234,33 @@ if __name__=='__main__':
     theta_phase='mixed' #'good' or 'bad' or 'mixed'
     runtime=1*second
     
+    Vrev_inp=0*mV
+    taurinp=0.1*ms
+    taudinp=0.5*ms
+    tauinp=taudinp 
+    Vhigh=0*mV
+    Vlow=-80*mV
+    ginp=0* msiemens * cm **-2
+    taurinp2=2*ms
+    taudinp2=10*ms
+    tauinp2=taudinp2   
+    
     gFSSI=[]
     gVIPSI=[]
-    for i in range(11):
-        gFSSI.append(1+i*3/10)
-        gVIPSI.append(1-i/10)
+    for step in range(11):
+        gFSSI.append(1+step*3/10)
+        gVIPSI.append(1-step/10)
         
     params=transpose([tile(gFSSI, len(gVIPSI)), repeat(gVIPSI, len(gFSSI))])
     
-    for j in len(params):
+    for pset in range(len(params)):
         
-        all_neurons,all_synapses,all_monitors=generate_VM_wFS(theta_phase,J,params[j][0],params[j][1],runtime)    
+        all_neurons,all_synapses,all_monitors=generate_VM_wFS(theta_phase,0,params[pset][0],params[pset][1],runtime)    
         
-        name = 'FEF_VM_wFS_gFS'+str(params[j][0])+'_gVS'+str(params[j][1])
+        name = 'FEF_VM_wFS_gFS'+str(params[pset][0])+'_gVS'+str(params[pset][1])
+        sim_dir = 'sims/'+name
+        
+        os.mkdir(sim_dir)
         
         net=Network()
         net.add(all_neurons)
@@ -255,6 +273,11 @@ if __name__=='__main__':
     
         R5,R6,R7,R8,V_RS,V_FS,V_SI=all_monitors
     #    R5,R6,R7,V_RS,V_FS,V_SI,inpmon=all_monitors
+        
+        save_raster('RS',R5.i,R5.t,sim_dir)
+        save_raster('SI',R6.i,R6.t,sim_dir)
+        save_raster('VIP',R7.i,R7.t,sim_dir)
+        save_raster('FS',R8.i,R8.t,sim_dir)
         
         figure()
         plot(R7.t,R7.i+0,'k.',label='VIP')
@@ -323,4 +346,4 @@ if __name__=='__main__':
         title('Power ($V^2$)')
         savefig(name+'_spec.png')
         
-        clear_cache('cython')
+    clear_cache('cython')
