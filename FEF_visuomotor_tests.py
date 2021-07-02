@@ -121,7 +121,7 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     #From FS cells
     S_FSgranFSgran=generate_syn(FS_gran,FS_gran,'IsynFS_FEF_VM','',0.2*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.2
     S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFS_FEF_VM','',0.2*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.2
-    S_FSgranSIgran=generate_syn(FS_gran,SI_gran,'IsynFS_FEF_VM','',1*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.5
+    S_FSgranSIgran=generate_syn(FS_gran,SI_gran,'IsynFS_FEF_VM','',4*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.5
 
     #From SOM cells, normal timescale
     #S_FSgranEgran=generate_syn(SI_gran,E_gran,'IsynFSgran','',1* usiemens * cm **-2*FLee,0.25*ms,5*ms,-80*mV)
@@ -139,7 +139,7 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     #From VIP cells    
     #S_SIdeepFSgran=generate_syn(VIP,SI_gran,'IsynSIdeep','',0.4* usiemens * cm **-2*FLee,0.25*ms,20*ms,-80*mV)
 #    S_SIdeepFSgran=generate_syn(VIP,SI_gran,'IsynSI2_FEF_VM','',1*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
-    S_VIPSIgran=generate_syn(VIP,SI_gran,'IsynSI2_FEF_VM','',1*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
+    S_VIPSIgran=generate_syn(VIP,SI_gran,'IsynSI2_FEF_VM','',0.75*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
     
     eq_gap='''_post=g_i*(V_post-V_pre) : amp * meter ** -2 (summed)
         g_i : siemens * meter**-2
@@ -171,37 +171,37 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
 #        print(VIP.ginp_VIP_good)
     fIB=13*Hz
 #    fIB=30*Hz
-    inputs_topdown3=generate_spike_timing(N_SI,fIB,0*ms,end_time=3000*ms)
+    inputs_topdown3=generate_spike_timing(N_VIP,fIB,0*ms,end_time=3000*ms)
     
     #Theta=4Hz
     if theta_phase=='mixed':
         t0=0*ms
         t1=125*ms
-        inputs_topdown3=generate_spike_timing(N_SI,fIB,t0,end_time=t1)
+        inputs_topdown3=generate_spike_timing(N_VIP,fIB,t0,end_time=t1)
         while t0+250*ms<runtime:
             t0,t1=t0+250*ms,t1+250*ms
-            inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_SI,fIB,t0,end_time=t1)))#t0+1/(4*fIB),end_time=t1)))
+            inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_VIP,fIB,t0,end_time=t1))) # t0+1/(4*fIB),end_time=t1)))
             
 #    #Theta=8Hz
 #    if theta_phase=='mixed':
 #        t0=0*ms
 #        t1=62.5*ms
-#        inputs_topdown3=generate_spike_timing(N_SI,fIB,t0,end_time=t1)
+#        inputs_topdown3=generate_spike_timing(N_VIP,fIB,t0,end_time=t1)
 #        while t0+125*ms<runtime:
 #            t0,t1=t0+125*ms,t1+125*ms
-#            inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_SI,fIB,t0,end_time=t1)))
+#            inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_VIP,fIB,t0,end_time=t1)))
 
 #    #Theta=2Hz
 #    if theta_phase=='mixed':
 #        t0=0*ms
 #        t1=250*ms
-#        inputs_topdown3=generate_spike_timing(N_SI,fIB,t0,end_time=t1)
+#        inputs_topdown3=generate_spike_timing(N_VIP,fIB,t0,end_time=t1)
 #        while t0+500*ms<runtime:
 #            t0,t1=t0+500*ms,t1+500*ms
-#            inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_SI,fIB,t0,end_time=t1)))
+#            inputs_topdown3=vstack((inputs_topdown3,generate_spike_timing(N_VIP,fIB,t0,end_time=t1)))
                         
     
-    G_topdown3 = SpikeGeneratorGroup(N_SI, inputs_topdown3[:,1], inputs_topdown3[:,0]*second)
+    G_topdown3 = SpikeGeneratorGroup(N_VIP, inputs_topdown3[:,1], inputs_topdown3[:,0]*second)
     topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
     topdown_in3.connect(j='i')
         
@@ -219,8 +219,8 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     #    lateral_in=Synapses(G_lateral,FS,on_pre='Vinp=Vhigh')
     #    lateral_in.connect(j='i')
     #    
-    #    inputs_lateral2=generate_spike_timing(N_SI,25*Hz,0*ms,end_time=2100*ms)
-    #    G_lateral2 = SpikeGeneratorGroup(N_SI, inputs_lateral2[:,1], inputs_lateral2[:,0]*second)
+    #    inputs_lateral2=generate_spike_timing(N_VIP,25*Hz,0*ms,end_time=2100*ms)
+    #    G_lateral2 = SpikeGeneratorGroup(N_VIP, inputs_lateral2[:,1], inputs_lateral2[:,0]*second)
     #    lateral_in2=Synapses(G_lateral2,SI,on_pre='Vinp=Vhigh')
     #    lateral_in2.connect(j='i')
         
@@ -307,12 +307,12 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     #inpIBmon=StateMonitor(IB_bd,'Iapp',record=[0])
     
     V_RS=StateMonitor(E_gran,'V',record=True)
-    V_FS=StateMonitor(SI_gran,'V',record=True)
-    V_SI=StateMonitor(VIP,'V',record=True)
+    V_SI=StateMonitor(SI_gran,'V',record=True)
+    V_VIP=StateMonitor(VIP,'V',record=True)
     
     all_neurons=VIP,E_gran,FS_gran,SI_gran,G_topdown3,Poisson_input,Poisson_input2#,Poisson_input3
     all_synapses=S_EgranEgran,S_EgranFSgran,S_EgranSIgran,S_FSgranEgran,S_FSgranFSgran,S_FSgranSIgran,S_SIgranEgran,S_SIgranFSgran,S_SIgranSIgran,S_VIPSIgran,gap_SISI,topdown_in3,bottomup_in,bottomup_in2#,bottomup_in3
-    all_monitors=R5,R6,R7,R8,V_RS,V_FS,V_SI,BUinp,TDinp
+    all_monitors=R5,R6,R7,R8,V_RS,V_SI,V_VIP,BUinp,TDinp
 #    all_monitors=R5,R6,R7,V_RS,V_FS,V_SI,inpmon
     
     return all_neurons,all_synapses,all_monitors
@@ -341,8 +341,8 @@ if __name__=='__main__':
     Vlow=-80*mV
     ginp=0* msiemens * cm **-2
     
-    N_SI,N_RS_gran,N_FS_gran,N_SI_gran=20,20,20,20
-    all_neurons,all_synapses,all_monitors=generate_deepSI_and_gran_layers(theta_phase,N_SI,N_RS_gran,N_FS_gran,N_SI_gran,runtime)    
+    N_VIP,N_RS_gran,N_FS_gran,N_SI_gran=20,20,20,20
+    all_neurons,all_synapses,all_monitors=generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_gran,runtime)    
     
     net=Network()
     net.add(all_neurons)
@@ -365,7 +365,7 @@ if __name__=='__main__':
     
     net.run(runtime,report='text',report_period=300*second)
 
-    R5,R6,R7,R8,V_RS,V_FS,V_SI,BUinp,TDinp=all_monitors
+    R5,R6,R7,R8,V_RS,V_SI,V_VIP,BUinp,TDinp=all_monitors
 #    R5,R6,R7,V_RS,V_FS,V_SI,inpmon=all_monitors
     
 #    figure()
@@ -405,10 +405,10 @@ if __name__=='__main__':
     
     min_t=int(50*ms*100000*Hz)
     LFP_V_RS=1/20*sum(V_RS.V,axis=0)[min_t:]
-    LFP_V_FS=1/20*sum(V_FS.V,axis=0)[min_t:]
+    LFP_V_SI=1/20*sum(V_SI.V,axis=0)[min_t:]
     
     f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
-    f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_SI=signal.periodogram(LFP_V_SI, 100000,'flattop', scaling='spectrum')
     
     figure()
     subplot(221)
@@ -416,7 +416,7 @@ if __name__=='__main__':
     ylabel('LFP')
     title('gran RS cell')
     subplot(223)
-    plot((V_FS.t/second)[min_t:],LFP_V_FS)
+    plot((V_SI.t/second)[min_t:],LFP_V_SI)
     ylabel('LFP')
     title('gran SOM cell')
     
@@ -427,7 +427,7 @@ if __name__=='__main__':
     xlim(0,100)
     title('gran RS cell')
     subplot(224)
-    plot(f,Spectrum_LFP_V_FS)
+    plot(f,Spectrum_LFP_V_SI)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,100)
