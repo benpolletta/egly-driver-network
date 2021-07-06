@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec  2 14:28:44 2019
+Created on July 1 2021
 
-@author: aaussel
+@author: benpolletta
 """
 
 from brian2 import *
@@ -16,6 +16,7 @@ from cells.VIP_FEF import *
 from FEF_and_LIP_parallel import save_raster
 
 import os
+import sys
 
 def generate_VM_wFS(theta_phase,IappSI,gFSSI,gVIPSI,runtime):
     
@@ -232,7 +233,7 @@ if __name__=='__main__':
     defaultclock.dt = 0.01*ms
     
     theta_phase='mixed' #'good' or 'bad' or 'mixed'
-    runtime=1*second
+    runtime=2*second
     
     Vrev_inp=0*mV
     taurinp=0.1*ms
@@ -247,11 +248,14 @@ if __name__=='__main__':
     
     gFSSI=[]
     gVIPSI=[]
+    # J=[]
     for step in range(11):
         gFSSI.append(1+step*3/10)
         gVIPSI.append(1-step/10)
+    #    J.append(-10+3*step)
         
     params=transpose([tile(gFSSI, len(gVIPSI)), repeat(gVIPSI, len(gFSSI))])
+    # params=transpose([tile(J, len(params)), repeat(params, len(J))])
     
     for pset in range(len(params)):
         
@@ -260,7 +264,8 @@ if __name__=='__main__':
         name = 'FEF_VM_wFS_gFS'+str(params[pset][0])+'_gVS'+str(params[pset][1])
         sim_dir = 'sims/'+name
         
-        os.mkdir(sim_dir)
+        if not os.path.exists(sim_dir):
+            os.mkdir(sim_dir)
         
         net=Network()
         net.add(all_neurons)
@@ -272,7 +277,7 @@ if __name__=='__main__':
         net.run(runtime,report='text',report_period=300*second)
     
         R5,R6,R7,R8,V_RS,V_FS,V_SI=all_monitors
-    #    R5,R6,R7,V_RS,V_FS,V_SI,inpmon=all_monitors
+    #    R5,    R6,R7,V_RS,V_FS,V_SI,inpmon=all_monitors
         
         save_raster('RS',R5.i,R5.t,sim_dir)
         save_raster('SI',R6.i,R6.t,sim_dir)
@@ -289,7 +294,7 @@ if __name__=='__main__':
         xlabel('Time (s)')
         ylabel('Neuron index')
         ylim(-1,81)
-        savefig(name+'.png')
+        savefig(sim_dir+'/raster.png')
         
         min_t=int(50*ms*100000*Hz)
         LFP_V_RS=1/20*sum(V_RS.V,axis=0)[min_t:]
@@ -321,7 +326,7 @@ if __name__=='__main__':
         yticks([],[])
         xlim(0,100)
         title('gran SOM cell')
-        savefig(name+'_RSFS.png')
+        savefig(sim_dir+'/RSFS_V.png')
         
         figure()
         plot(f,Spectrum_LFP_V_RS)
@@ -344,6 +349,8 @@ if __name__=='__main__':
         xlabel('Time (s)')
         ylim(0,45)
         title('Power ($V^2$)')
-        savefig(name+'_spec.png')
+        savefig(sim_dir+'/spec.png')
+        
+        close('all')
         
     clear_cache('cython')
