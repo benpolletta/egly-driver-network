@@ -1,0 +1,17 @@
+#!/bin/sh -l
+
+#$ -l mem_total=256G
+#$ -pe omp 16
+#$ -t 1-11
+
+SIinputs=(-10 -7 -4 -1 2 5 8 11 14 17 20)
+index=$(($SGE_TASK_ID-1))
+SIinput=${SIinputs[$index]}
+
+echo "Executing FEF_VM_wFS "$SIinput"."
+
+module load miniconda
+
+conda activate brienv
+
+python FEF_VM_wFS_argJ.py $SIinput
