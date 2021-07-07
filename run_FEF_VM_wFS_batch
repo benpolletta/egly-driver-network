@@ -8,7 +8,7 @@ SIinputs=(-10 -7 -4 -1 2 5 8 11 14 17 20)
 index=$(($SGE_TASK_ID-1))
 SIinput=${SIinputs[$index]}
 
-echo "Executing FEF_VM_wFS "$SIinput"."
+echo "Executing FEF_VM_wFS_argJ.py "$SIinput"."
 
 module load miniconda
 

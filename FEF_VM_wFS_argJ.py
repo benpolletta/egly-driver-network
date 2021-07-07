@@ -229,7 +229,7 @@ if __name__=='__main__':
     close('all')
     start_scope()    
     
-    #prefs.codegen.target = 'numpy'
+    prefs.codegen.target = 'numpy'
     defaultclock.dt = 0.01*ms
     
     theta_phase='mixed' #'good' or 'bad' or 'mixed'
