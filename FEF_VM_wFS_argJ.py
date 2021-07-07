@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on July 1 2021
+Created on July 6 2021
 
 @author: benpolletta
 """
@@ -229,7 +229,7 @@ if __name__=='__main__':
     close('all')
     start_scope()    
     
-    prefs.codegen.target = 'numpy'
+    #prefs.codegen.target = 'numpy'
     defaultclock.dt = 0.01*ms
     
     theta_phase='mixed' #'good' or 'bad' or 'mixed'
@@ -261,98 +261,103 @@ if __name__=='__main__':
     
     for pset in range(len(params)):
         
-        all_neurons,all_synapses,all_monitors=generate_VM_wFS(theta_phase,J,params[pset][0],params[pset][1],runtime)    
-        
         name = 'FEF_VM_wFS_J'+str(J)+'_gFS'+str(params[pset][0])+'_gVS'+str(params[pset][1])
         sim_dir = 'sims/'+name
         
         if not os.path.exists(sim_dir):
+            
             os.mkdir(sim_dir)
+            
+            all_neurons,all_synapses,all_monitors=generate_VM_wFS(theta_phase,J,params[pset][0],params[pset][1],runtime)    
+            
+            net=Network()
+            net.add(all_neurons)
+            net.add(all_synapses)
+            net.add(all_monitors)
+            
+            prefs.codegen.target = 'cython' #cython=faster, numpy = default python
+            
+            net.run(runtime,report='text',report_period=300*second)
         
-        net=Network()
-        net.add(all_neurons)
-        net.add(all_synapses)
-        net.add(all_monitors)
+            R5,R6,R7,R8,V_RS,V_FS,V_SI=all_monitors
+        #    R5,    R6,R7,V_RS,V_FS,V_SI,inpmon=all_monitors
+            
+            save_raster('RS',R5.i,R5.t,sim_dir)
+            save_raster('SI',R6.i,R6.t,sim_dir)
+            save_raster('VIP',R7.i,R7.t,sim_dir)
+            save_raster('FS',R8.i,R8.t,sim_dir)
+            
+            figure()
+            plot(R7.t,R7.i+0,'k.',label='VIP')
+            plot(R5.t,R5.i+20,'r.',label='RS')
+            plot(R6.t,R6.i+40,'g.',label='SOM')
+            plot(R8.t,R8.i+60,'b.',label='FS')
+            xlim(0,runtime/second)
+        #    legend(loc='upper left')
+            xlabel('Time (s)')
+            ylabel('Neuron index')
+            ylim(-1,81)
+            savefig(sim_dir+'/raster.png')
+            
+            min_t=int(50*ms*100000*Hz)
+            LFP_V_RS=1/20*sum(V_RS.V,axis=0)[min_t:]
+            LFP_V_FS=1/20*sum(V_FS.V,axis=0)[min_t:]
+            
+            f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
+            f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
+            
+            figure()
+            subplot(221)
+            plot((V_RS.t/second)[min_t:],LFP_V_RS)
+            ylabel('LFP')
+            title('gran RS cell')
+            subplot(223)
+            plot((V_FS.t/second)[min_t:],LFP_V_FS)
+            ylabel('LFP')
+            title('gran SOM cell')
+            plot()
+            
+            subplot(222)
+            plot(f,Spectrum_LFP_V_RS)
+            ylabel('Spectrum')
+            yticks([],[])
+            xlim(0,100)
+            title('gran RS cell')
+            subplot(224)
+            plot(f,Spectrum_LFP_V_FS)
+            ylabel('Spectrum')
+            yticks([],[])
+            xlim(0,100)
+            title('gran SOM cell')
+            savefig(sim_dir+'/RSFS_V.png')
+            
+            figure()
+            plot(f,Spectrum_LFP_V_RS)
+            ylabel('Spectrum')
+            xlabel('Frequency (Hz)')
+            xlim(0,50)
+            
+            f, t, Sxx = signal.spectrogram(LFP_V_RS, 100000*Hz,nperseg=20000,noverlap=15000)
+            figure()
+            pcolormesh(t, f, Sxx)#, shading='gouraud')
+            ylabel('Frequency [Hz]')
+            xlabel('Time [sec]')
+            ylim(0,50)
         
-        prefs.codegen.target = 'cython' #cython=faster, numpy = default python
-        
-        net.run(runtime,report='text',report_period=300*second)
-    
-        R5,R6,R7,R8,V_RS,V_FS,V_SI=all_monitors
-    #    R5,    R6,R7,V_RS,V_FS,V_SI,inpmon=all_monitors
-        
-        save_raster('RS',R5.i,R5.t,sim_dir)
-        save_raster('SI',R6.i,R6.t,sim_dir)
-        save_raster('VIP',R7.i,R7.t,sim_dir)
-        save_raster('FS',R8.i,R8.t,sim_dir)
-        
-        figure()
-        plot(R7.t,R7.i+0,'k.',label='VIP')
-        plot(R5.t,R5.i+20,'r.',label='RS')
-        plot(R6.t,R6.i+40,'g.',label='SOM')
-        plot(R8.t,R8.i+60,'b.',label='FS')
-        xlim(0,runtime/second)
-    #    legend(loc='upper left')
-        xlabel('Time (s)')
-        ylabel('Neuron index')
-        ylim(-1,81)
-        savefig(sim_dir+'/raster.png')
-        
-        min_t=int(50*ms*100000*Hz)
-        LFP_V_RS=1/20*sum(V_RS.V,axis=0)[min_t:]
-        LFP_V_FS=1/20*sum(V_FS.V,axis=0)[min_t:]
-        
-        f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
-        f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
-        
-        figure()
-        subplot(221)
-        plot((V_RS.t/second)[min_t:],LFP_V_RS)
-        ylabel('LFP')
-        title('gran RS cell')
-        subplot(223)
-        plot((V_FS.t/second)[min_t:],LFP_V_FS)
-        ylabel('LFP')
-        title('gran SOM cell')
-        plot()
-        
-        subplot(222)
-        plot(f,Spectrum_LFP_V_RS)
-        ylabel('Spectrum')
-        yticks([],[])
-        xlim(0,100)
-        title('gran RS cell')
-        subplot(224)
-        plot(f,Spectrum_LFP_V_FS)
-        ylabel('Spectrum')
-        yticks([],[])
-        xlim(0,100)
-        title('gran SOM cell')
-        savefig(sim_dir+'/RSFS_V.png')
-        
-        figure()
-        plot(f,Spectrum_LFP_V_RS)
-        ylabel('Spectrum')
-        xlabel('Frequency (Hz)')
-        xlim(0,50)
-        
-        f, t, Sxx = signal.spectrogram(LFP_V_RS, 100000*Hz,nperseg=20000,noverlap=15000)
-        figure()
-        pcolormesh(t, f, Sxx)#, shading='gouraud')
-        ylabel('Frequency [Hz]')
-        xlabel('Time [sec]')
-        ylim(0,50)
-    
-        f, t, Sxx = signal.spectrogram(LFP_V_RS, 100000*Hz,nperseg=20000,noverlap=15000)
-        figure()
-        pcolormesh(t, f, Sxx)#, cmap=)
-        colorbar(format='%.1e')
-        ylabel('Frequency (Hz)')
-        xlabel('Time (s)')
-        ylim(0,45)
-        title('Power ($V^2$)')
-        savefig(sim_dir+'/spec.png')
-        
-        close('all')
-        
-    clear_cache('cython')
+            f, t, Sxx = signal.spectrogram(LFP_V_RS, 100000*Hz,nperseg=20000,noverlap=15000)
+            figure()
+            pcolormesh(t, f, Sxx)#, cmap=)
+            colorbar(format='%.1e')
+            ylabel('Frequency (Hz)')
+            xlabel('Time (s)')
+            ylim(0,45)
+            title('Power ($V^2$)')
+            savefig(sim_dir+'/spec.png')
+            
+            close('all')
+            
+        else :
+            
+            print('Skipping '+name)
+            
+        clear_cache('cython')
