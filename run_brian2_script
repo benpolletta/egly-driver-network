@@ -1,0 +1,12 @@
+#!/bin/sh -l
+
+#$ -l mem_total=256G
+#$ -pe omp 16
+
+echo "Executing '$1'."
+
+module load miniconda
+
+conda activate brienv
+
+python $1
