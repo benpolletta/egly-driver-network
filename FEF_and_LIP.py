@@ -53,7 +53,7 @@ if __name__=='__main__':
 #    set_device('genn')
     close('all')
 
-    runtime=1*second
+    runtime=2*second
     
     Vrev_inp=0*mV
     taurinp=0.1*ms
@@ -508,4 +508,4 @@ if __name__=='__main__':
     xlabel('Time (s)')
     ylabel('Neuron index')
     
-    clear_cache('cython')
+    #clear_cache('cython')

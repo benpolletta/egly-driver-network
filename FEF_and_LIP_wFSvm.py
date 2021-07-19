@@ -124,7 +124,7 @@ if __name__=='__main__':
     net=Network()
     
     all_neurons_FEF,all_synapses_FEF,all_monitors_FEF=create_FEF_full2(N_RS_vis,N_FS_vis,N_RS_mot,N_dSI_vm,N_RS_vm,N_FS_vm,N_gSI_vm,theta_phase,target_on,runtime,target_time)
-    RSvm,SIvm,VIPvm,FSvm,V_RS,V_SI,V_VIP,BUinp,TDinp,RSv,FSv,VIPv,SIv,RSm=all_monitors_FEF
+    RSvm,SIvm,VIPvm,FSvm,V_RS,V_SI,V_VIP,RSv,FSv,VIPv,SIv,RSm=all_monitors_FEF
     RSvm_FEF,SIvm_FEF,RSv_FEF,SIv_FEF,VIPv_FEF=all_neurons_FEF[1],all_neurons_FEF[3],all_neurons_FEF[7],all_neurons_FEF[10],all_neurons_FEF[9]
     
     all_neurons_LIP, all_synapses_LIP, all_gap_junctions_LIP, all_monitors_LIP=make_full_network(syn_cond,J,thal,theta_phase)
@@ -305,7 +305,7 @@ if __name__=='__main__':
     #FEF Plots    
     figure()#figsize=(10,4))
     subplot(311)
-    title('Visual Neurons')
+    ylabel('Visual Neurons')
     plot(RSv.t,RSv.i+60,'r.',label='RS')
     plot(FSv.t,FSv.i+40,'b.',label='FS')
     plot(VIPv.t,VIPv.i+0,'k.',label='VIP')
@@ -313,10 +313,10 @@ if __name__=='__main__':
     xlim(0.2,runtime/second)
     legend(loc='upper left')   
     xlabel('Time (s)')
-    ylabel('Neuron index')
+    #ylabel('Neuron index')
     
     subplot(312)
-    title('Visual-Motor Neurons')
+    ylabel('Visual-Motor Neurons')
     plot(VIPvm.t,VIPvm.i+0,'k.',label='VIP')
     plot(RSvm.t,RSvm.i+60,'r.',label='RS')
     plot(FSvm.t,FSvm.i+40,'b.',label='FS')
@@ -324,15 +324,15 @@ if __name__=='__main__':
     xlim(0.2,runtime/second)
     #legend(loc='upper left') 
     xlabel('Time (s)')
-    ylabel('Neuron index')
+    #ylabel('Neuron index')
     
     subplot(313)
-    title('Decision cells')
+    ylabel('Decision cells')
     plot(RSm.t,RSm.i+0,'r.',label='RS')
     xlim(0.2,runtime/second)
     #legend(loc='upper left') 
     xlabel('Time (s)')
-    ylabel('Neuron index')
+    #ylabel('Neuron index')
     
     tight_layout()
     

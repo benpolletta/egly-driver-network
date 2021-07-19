@@ -213,7 +213,7 @@ if __name__=='__main__':
     tauinp2=taudinp2
     net.run(runtime,report='text',report_period=300*second)
         
-    name = 'FEF_LIP_J'+str(J)+'_gFS'+str(params[pset][0])+'_gVS'+str(params[pset][1])
+    name = 'FEF_LIP_J'+str(J)+'_gFS'+str(gFS)+'_gVS'+str(gVS)
     sim_dir = 'sims/'+name
         
     if not os.path.exists(sim_dir):

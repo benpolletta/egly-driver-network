@@ -18,9 +18,7 @@ from FEF_and_LIP_parallel import save_raster
 import os
 import sys
 
-def generate_VM_wFS(theta_phase,IappSI,gFSSI,gVIPSI,runtime):
-    
-    N_VIP,N_RS_gran,N_FS_gran,N_SI_gran=20,20,20,20
+def generate_VM_wFS(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_gran,runtime):
     
     if theta_phase=='bad':
         ginp_IB=0* msiemens * cm **-2
@@ -62,7 +60,7 @@ def generate_VM_wFS(theta_phase,IappSI,gFSSI,gVIPSI,runtime):
     E_gran.mAR = '0.035+0.025*rand()'
 #    E_gran.J='30 * uA * cmeter ** -2'  #article SI=25, code=1
 #    E_gran.J='20 * uA * cmeter ** -2'  #article SI=25, code=1
-    E_gran.J=str(IappSI)+'* uA * cmeter ** -2'  #article SI=25, code=1
+    E_gran.J='10* uA * cmeter ** -2'  #article SI=25, code=1
     
     FS_gran=NeuronGroup(N_FS_gran,eq_FS_FEF,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     FS_gran.V = '-110*mvolt+10*rand()*mvolt'
@@ -76,7 +74,7 @@ def generate_VM_wFS(theta_phase,IappSI,gFSSI,gVIPSI,runtime):
     SI_gran.h = '0+0.05*rand()'
     SI_gran.m = '0+0.05*rand()'
 #    SI_gran.J='5 * uA * cmeter ** -2' #article=code=35
-    SI_gran.J='0 * uA * cmeter ** -2' 
+    SI_gran.J='5 * uA * cmeter ** -2' 
 
     VIP=NeuronGroup(N_VIP,eq_VIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-63*mvolt'

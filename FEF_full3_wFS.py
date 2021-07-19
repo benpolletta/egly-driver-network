@@ -14,7 +14,7 @@ from cells.FS_FEF import *
 from cells.SI_FEF import *
 from cells.VIP_FEF import *
 
-from FEF_visuomotor_tests import *
+from FEF_VM_wFS import *
 from FEF_contrast_detection_3 import *
 
 runtime=1*second
@@ -55,7 +55,7 @@ def generate_spike_timing(N,f,start_time,end_time=runtime):
 def create_FEF_full2(N_RS_vis,N_FS_vis,N_RS_mot,N_VIP_vm,N_RS_vm,N_FS_vm,N_gSI_vm,theta_phase,target_on,runtime,target_time):
     
     #create each functional group of neurons individually
-    all_neurons_vm,all_synapses_vm,all_monitors_vm=generate_deepSI_and_gran_layers(theta_phase,N_VIP_vm,N_RS_vm,N_FS_vm,N_gSI_vm,runtime)
+    all_neurons_vm,all_synapses_vm,all_monitors_vm=generate_VM_wFS(theta_phase,N_VIP_vm,N_RS_vm,N_FS_vm,N_gSI_vm,runtime)
     RS_vm=all_neurons_vm[1]
     
     all_neurons_v,all_synapses_v,all_monitors_v=generate_visual_neurons(theta_phase,N_FS_vis,N_RS_vis,runtime,target_on,target_time)
@@ -180,8 +180,6 @@ if __name__=='__main__':
     legend(loc='upper left')
     
     tight_layout()
-    
-    savefig('sims/FEF_full3')
     
     clear_cache('cython')
     

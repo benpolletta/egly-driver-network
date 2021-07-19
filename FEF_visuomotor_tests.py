@@ -301,7 +301,7 @@ if __name__=='__main__':
     
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5
     theta_phase='mixed' #'good' or 'bad' or 'mixed'
-    runtime=1*second
+    runtime=2*second
     
     Vrev_inp=0*mV
     taurinp=0.1*ms
@@ -419,4 +419,4 @@ if __name__=='__main__':
     ylim(0,45)
     title('Power ($V^2$)')
     
-    clear_cache('cython')
+    #clear_cache('cython')
