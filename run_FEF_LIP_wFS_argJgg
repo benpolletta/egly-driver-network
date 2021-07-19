@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#$ -l mem_total=256G
+#$ -pe omp 16
+
+echo "Executing FEF_and_LIP_argJgg.py '$1' '$2' '$3'."
+
+module load miniconda
+
+conda activate brienv
+
+python FEF_and_LIP_argJgg.py $1 $2 $3
