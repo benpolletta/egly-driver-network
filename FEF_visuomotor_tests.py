@@ -71,7 +71,7 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     SI_gran.h = '0+0.05*rand()'
     SI_gran.m = '0+0.05*rand()'
 #    SI_gran.J='5 * uA * cmeter ** -2' #article=code=35
-    SI_gran.J='0 * uA * cmeter ** -2' #article=code=35
+    SI_gran.J='5 * uA * cmeter ** -2' #article=code=35
      #-30
 #    SI_gran.J='-25 * uA * cmeter ** -2'
      
@@ -121,7 +121,7 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     #From FS cells
     S_FSgranFSgran=generate_syn(FS_gran,FS_gran,'IsynFS_FEF_VM','',0.2*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.2
     S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFS_FEF_VM','',0.2*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.2
-    S_FSgranSIgran=generate_syn(FS_gran,SI_gran,'IsynFS_FEF_VM','',4*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.5
+    S_FSgranSIgran=generate_syn(FS_gran,SI_gran,'IsynFS_FEF_VM','',1*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.5
 
     #From SOM cells, normal timescale
     #S_FSgranEgran=generate_syn(SI_gran,E_gran,'IsynFSgran','',1* usiemens * cm **-2*FLee,0.25*ms,5*ms,-80*mV)
@@ -129,7 +129,7 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     S_SIgranEgran=generate_syn(SI_gran,E_gran,'IsynSI_FEF_VM','',0.5*msiemens * cm **-2,0.25*ms,20*ms,-80*mV) #0.35 #0.5
     S_SIgranFSgran=generate_syn(SI_gran,FS_gran,'IsynSI_FEF_VM','',0.2*msiemens * cm **-2,0.25*ms,20*ms,-80*mV) #0.2
     #S_FSgranFSgran=generate_syn(SI_gran,SI_gran,'IsynFSgran','',0.1* usiemens * cm **-2*FLee,0.25*ms,5*ms,-75*mV)
-    S_SIgranSIgran=generate_syn(SI_gran,SI_gran,'IsynSI_FEF_VM','i',0* msiemens * cm **-2,0.25*ms,20*ms,-75*mV) #1 #0.2
+    S_SIgranSIgran=generate_syn(SI_gran,SI_gran,'IsynSI_FEF_VM','i',1* msiemens * cm **-2,0.25*ms,20*ms,-75*mV) #1 #0.2
     
 #    #From SOM cells, gamma timescale
 #    S_FSgranEgran=generate_syn(SI_gran,E_gran,'IsynSI_FEF_VM','',0.5*msiemens * cm **-2,0.25*ms,5*ms,-80*mV) #0.35

@@ -17,8 +17,6 @@ from LIP_full import *
 
 from itertools import *
 
-
-
 def generate_syn(source,target,syntype,connection_pattern,g_i,taur_i,taud_i,V_i):
     eq_syn='''_post=s_i*g_i*(V_post-V_i) : amp * meter ** -2 (summed)
         ds_i/dt=-s_i/taud_i+(1-s_i)/taur_i*0.5*(1+tanh(V_pre/10/mV)) : 1
@@ -208,8 +206,6 @@ if __name__=='__main__':
     taudinp2=10*ms
     tauinp2=taudinp2
     net.run(runtime,report='text',report_period=300*second)
-    
-    
     
     # LIP Plots
     figure()
@@ -462,7 +458,7 @@ if __name__=='__main__':
     
     
     # LIP Plots
-    figure(figsize=(6,9))
+    figure(figsize=(9,9))
 #    subplot(411)
     up=100
     plot(R1.t,R1.i+140+up,'r.',label='RS cells')
@@ -511,4 +507,4 @@ if __name__=='__main__':
     xlabel('Time (s)')
     ylabel('Neuron index')
     
-    clear_cache('cython')
+    #clear_cache('cython')

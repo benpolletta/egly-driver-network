@@ -67,7 +67,7 @@ if __name__=='__main__':
     NN=1 #multiplicative factor on the number of neurons
     N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
     N_SI,N_RS_gran,N_SI_gran=20,20,20
-    N_RS_vis,N_FS_vis,N_RS_mot,N_SI_mot,N_dSI_vm,N_RS_vm,N_gSI_vm=[20]*7
+    N_RS_vis,N_FS_vis,N_RS_mot,N_SI_mot,N_dSI_vm,N_RS_vm,N_FS_vm,N_gSI_vm=[20]*8
 
     
     all_SIdFSg=[2*msiemens * cm **-2] #1
@@ -125,7 +125,7 @@ if __name__=='__main__':
     
     net=Network()
     
-    all_neurons_FEF,all_synapses_FEF,all_monitors_FEF=create_FEF_full2(N_RS_vis,N_FS_vis,N_RS_mot,N_dSI_vm,N_RS_vm,N_gSI_vm,theta_phase,target_on,runtime,target_time)
+    all_neurons_FEF,all_synapses_FEF,all_monitors_FEF=create_FEF_full2(N_RS_vis,N_FS_vis,N_RS_mot,N_dSI_vm,N_RS_vm,N_FS_vm,N_gSI_vm,theta_phase,target_on,runtime,target_time)
     R8,R9,R10,V_RS,V_FS,V_SI,R11,R12,R13,R14,mon_RS=all_monitors_FEF
     RSvm_FEF,SIvm_FEF,RSv_FEF,SIv_FEF,VIPv_FEF=all_neurons_FEF[1],all_neurons_FEF[2],all_neurons_FEF[6],all_neurons_FEF[9],all_neurons_FEF[8]
     
