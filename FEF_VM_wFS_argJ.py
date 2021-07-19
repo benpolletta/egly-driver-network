@@ -287,6 +287,11 @@ if __name__=='__main__':
             save_raster('VIP',R7.i,R7.t,sim_dir)
             save_raster('FS',R8.i,R8.t,sim_dir)
             
+            V_file=open(sim_dir,'/V_RS.txt','w')
+            for elem in V_RS:
+                raster_file.write(str(elem)+',')
+            raster_file.close()
+            
             figure()
             plot(R7.t,R7.i+0,'k.',label='VIP')
             plot(R5.t,R5.i+20,'r.',label='RS')
@@ -360,4 +365,4 @@ if __name__=='__main__':
             
             print('Skipping '+name)
             
-        clear_cache('cython')
+        #clear_cache('cython')
