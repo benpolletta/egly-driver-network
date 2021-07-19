@@ -12,7 +12,7 @@ from brian2 import *
 
 from scipy import signal
 
-from FEF_full3 import *
+from FEF_full3_wFS import *
 from LIP_full import *
 
 from itertools import *
