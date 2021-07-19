@@ -127,7 +127,7 @@ if __name__=='__main__':
     
     theta_phase='mixed'
     target_on=True
-    runtime=1*second
+    runtime=2*second
     target_time=650*msecond
 #    target_time=1500*msecond
     
@@ -167,8 +167,8 @@ if __name__=='__main__':
     subplot(132)
     title('Visual-Motor Neurons')
     plot(RSvm.t,RSvm.i+60,'r.',label='RS')
-    plot(FSvm.t,FSvm.i+40,'c.',label='FS')
-    plot(SIvm.t,SIvm.i+20,'b.',label='SI')
+    plot(FSvm.t,FSvm.i+40,'b.',label='FS')
+    plot(SIvm.t,SIvm.i+20,'g.',label='SI')
     plot(VIPvm.t,VIPvm.i+0,'k.',label='VIP')
     xlim(0,runtime/second)
     legend(loc='upper left') 

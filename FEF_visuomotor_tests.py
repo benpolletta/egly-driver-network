@@ -139,7 +139,7 @@ def generate_deepSI_and_gran_layers(theta_phase,N_VIP,N_RS_gran,N_FS_gran,N_SI_g
     #From VIP cells    
     #S_SIdeepFSgran=generate_syn(VIP,SI_gran,'IsynSIdeep','',0.4* usiemens * cm **-2*FLee,0.25*ms,20*ms,-80*mV)
 #    S_SIdeepFSgran=generate_syn(VIP,SI_gran,'IsynSI2_FEF_VM','',1*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
-    S_VIPSIgran=generate_syn(VIP,SI_gran,'IsynSI2_FEF_VM','',0.75*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
+    S_VIPSIgran=generate_syn(VIP,SI_gran,'IsynSI2_FEF_VM','',1*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
     
     eq_gap='''_post=g_i*(V_post-V_pre) : amp * meter ** -2 (summed)
         g_i : siemens * meter**-2
