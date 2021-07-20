@@ -234,21 +234,31 @@ if __name__=='__main__':
     # xlabel('Time (s)')
     # ylabel('Neuron index')
     
-    # min_t=int(100*ms*100000*Hz)
-    # LFP_LIP=1/80*sum(V1.V,axis=0)[min_t:]
-    # LFP_FEF=1/20*sum(V_RS.V,axis=0)[min_t:]
+    min_t=int(100*ms*100000*Hz)
+    LFP_LIP=1/80*sum(V1.V,axis=0)[min_t:]
+    LFP_FEF=1/20*sum(V_RS.V,axis=0)[min_t:]
+    
+    record_dt=1/512*second
+    t=int(0.3*second/record_dt) #t_debut
+    L=int(2*second/record_dt)
+    fs = 1/record_dt
+    freq = linspace(1/second, fs/2, 100)
+    widths = 6*fs/(2*freq*pi)
+            
     
     figure()
     subplot(121)
-    f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(t, f, Sxx,cmap='RdBu')#, shading='gouraud')
+    CWT = signal.cwt(LFP_LIP, signal.morlet2, widths, w=6)
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t, freq, CWT, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0,50)
     
     subplot(122)
-    f, t, Sxx = signal.spectrogram(LFP_FEF, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(t, f, Sxx,cmap='RdBu')#, shading='gouraud')
+    CWT = signal.cwt(LFP_FEF, signal.morlet2, widths, w=6)
+    #f, t, Sxx = signal.spectrogram(LFP_FEF, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V_RS.t, freq, CWT, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0,50)
@@ -272,7 +282,7 @@ if __name__=='__main__':
     subplot(132)
     title('Visual-Motor Neurons')
     plot(VIPvm.t,VIPvm.i+0,'g.',label='VIP')
-    plot(RSvm.t,RSvm.i+40+up,'r.',label='RS')
+    plot(RSvm.t,RSvm.i+40,'r.',label='RS')
     plot(RSvm.t,RSvm.i+60,'r.',label='RS')
     plot(SIvm.t,SIvm.i+20,'.',label='SOM',color='lime')
     xlim(0.2,runtime/second)
