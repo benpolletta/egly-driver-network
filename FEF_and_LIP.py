@@ -323,7 +323,7 @@ if __name__=='__main__':
     title('Visual-Motor Neurons')
     plot(R10.t,R10.i+0,'g.',label='VIP')
     plot(R8.t,R8.i+60,'r.',label='RS')
-    plot(R9.t,R9.i+40,'.',label='SOM',color='lime')
+    plot(R9.t,R9.i+30,'.',label='SOM',color='lime')
     xlim(0.2,runtime/second)
     legend(loc='upper left') 
     xlabel('Time (s)')
@@ -341,7 +341,7 @@ if __name__=='__main__':
     
     
     # LIP Plots
-    figure(figsize=(4,9))
+    figure(figsize=(9,9))
 #    subplot(411)
     up=240
     plot(R1.t,R1.i+140+up,'r.',label='RS cells')
@@ -364,10 +364,10 @@ if __name__=='__main__':
 #    subplot(413)
     up=40
 #    title('FEF Visual Neurons')
-    plot(R11.t,R11.i+0+up,'r.',label='RS')
-    plot(R12.t,R12.i+20+up,'b.',label='FS')
-    plot(R13.t,R13.i+40+up,'k.',label='VIP')
-    plot(R14.t,R14.i+60+up,'g.',label='SOM')
+    plot(R11.t,R11.i+60+up,'r.',label='RS')
+    plot(R12.t,R12.i+40+up,'b.',label='FS')
+    plot(R13.t,R13.i+0+up,'k.',label='VIP')
+    plot(R14.t,R14.i+20+up,'g.',label='SOM')
     xlim(0.2,runtime/second)
     plot([0.2,runtime/second],[up-10,up-10],'k')
 #    xticks([],[])
@@ -380,7 +380,7 @@ if __name__=='__main__':
 #    title('FEF Visual-Motor Neurons')
     plot(R10.t,R10.i+0+up,'k.',label='VIP')
     plot(R8.t,R8.i+60+up,'r.',label='RS')
-    plot(R9.t,R9.i+40+up,'g.',label='SOM')
+    plot(R9.t,R9.i+30+up,'g.',label='SOM')
     xlim(0.2,runtime/second)
     plot([0.2,runtime/second],[up-10,up-10],'k')
 #    xticks([],[])
@@ -460,7 +460,7 @@ if __name__=='__main__':
     
     
     # LIP Plots
-    figure(figsize=(6,9))
+    figure(figsize=(9,9))
 #    subplot(411)
     up=100
     plot(R1.t,R1.i+140+up,'r.',label='RS cells')
@@ -480,7 +480,7 @@ if __name__=='__main__':
 #    title('FEF Visual-Motor Neurons')
     plot(R10.t,R10.i+0+up,'k.',label='VIP')
     plot(R8.t,R8.i+60+up,'r.',label='RS')
-    plot(R9.t,R9.i+40+up,'g.',label='SOM')
+    plot(R9.t,R9.i+30+up,'g.',label='SOM')
     xlim(0.2,runtime/second)
 #    plot([0.2,runtime/second],[up-10,up-10],'k')
 #    xticks([],[])
