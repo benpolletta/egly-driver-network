@@ -257,7 +257,10 @@ if __name__=='__main__':
     params=transpose([tile(gFSSI, len(gVIPSI)), repeat(gVIPSI, len(gFSSI))])
     # params=transpose([tile(J, len(params)), repeat(params, len(J))])
     
-    J=sys.argv[1]
+    if len(argv) < 1:
+        J=0
+    else:
+        J=sys.argv[1]
     
     for pset in range(len(params)):
         
