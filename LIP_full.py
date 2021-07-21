@@ -414,7 +414,7 @@ def run_one_simulation(simu,path,index_var):
     start_scope()
     close('all')
 
-    runtime=1*second
+    runtime=2*second
 #    runtime=5*second
     
     Vrev_inp=0*mV
@@ -532,6 +532,7 @@ def run_one_simulation(simu,path,index_var):
 #    LFP_V_RSg=1/N_FS*sum(V5.V,axis=0)[min_t:]
 #    LFP_V_FSg=1/N_FS*sum(V6.V,axis=0)[min_t:]
 #    LFP_V_SId=1/N_SI*sum(V7.V,axis=0)[min_t:]
+
     
 #    f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='density')
@@ -542,8 +543,24 @@ def run_one_simulation(simu,path,index_var):
 #    f,Spectrum_LFP_V_FSg=signal.periodogram(LFP_V_FSg, 100000,'flattop', scaling='spectrum')
 #    f,Spectrum_LFP_V_SId=signal.periodogram(LFP_V_SId, 100000,'flattop', scaling='spectrum')
     
+    record_dt=1/512*second
+    t=int(0.3*second/record_dt) #t_debut
+    L=int(2*second/record_dt)
+    fs = 1/record_dt
+    freq = linspace(1/second, fs/2, 100)
+    widths = 6*fs/(2*freq*pi)
+    
+    CWT = signal.cwt(LFP_LIP, signal.morlet2, widths, w=6)
+    
     figure()
     plot(LFP_V_RS)
+    
+    figure()
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t[min_t:], freq, CWT, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0,50)
     
 #    figure(figsize=(10,8))    
 #    subplot(421)
@@ -736,9 +753,9 @@ if __name__=='__main__':
 #    all_J_RSg=['-10 * uA * cmeter ** -2','-5 * uA * cmeter ** -2','0 * uA * cmeter ** -2','5 * uA * cmeter ** -2','10 * uA * cmeter ** -2','15 * uA * cmeter ** -2','20 * uA * cmeter ** -2']
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
 #    all_thal=[10* msiemens * cm **-2]
-    all_thal=[0* msiemens * cm **-2]
-#    all_theta=['mixed']
-    all_theta=['mixed','mixed','mixed','mixed','mixed']
+    all_thal=[10* msiemens * cm **-2]
+    all_theta=['good']
+    #all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]
@@ -784,4 +801,4 @@ if __name__=='__main__':
     for simu in all_sim:
         run_one_simulation(simu,path,index_var)
     
-    clear_cache('cython')    
+    # clear_cache('cython')    

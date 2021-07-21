@@ -228,24 +228,28 @@ if __name__=='__main__':
     min_t=int(100*ms*100000*Hz)
     LFP_LIP=1/80*sum(V1.V,axis=0)[min_t:]
     LFP_FEF=1/20*sum(V_RS.V,axis=0)[min_t:]
-#    LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
-#    LFP_V_SI=1/N_SI*sum(V3.V,axis=0)[min_t:]
-#    LFP_V_IB=1/N_IB*sum(V4.V,axis=0)[min_t:]
-#    LFP_V_RSg=1/N_FS*sum(V5.V,axis=0)[min_t:]
-#    LFP_V_FSg=1/N_FS*sum(V6.V,axis=0)[min_t:]
-#    LFP_V_SId=1/N_SI*sum(V7.V,axis=0)[min_t:]
+    
+    record_dt=1/512*second
+    t=int(0.3*second/record_dt) #t_debut
+    L=int(2*second/record_dt)
+    fs = 1/record_dt
+    freq = linspace(1/second, fs/2, 100)
+    widths = 6*fs/(2*freq*pi)
+            
     
     figure()
     subplot(121)
-    f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(t, f, Sxx,cmap='RdBu')#, shading='gouraud')
+    CWT = signal.cwt(LFP_LIP, signal.morlet2, widths, w=6)
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t[min_t:], freq, CWT, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0,50)
     
     subplot(122)
-    f, t, Sxx = signal.spectrogram(LFP_FEF, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(t, f, Sxx,cmap='RdBu')#, shading='gouraud')
+    CWT = signal.cwt(LFP_FEF, signal.morlet2, widths, w=6)
+    #f, t, Sxx = signal.spectrogram(LFP_FEF, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V_RS.t[min_t:], freq, CWT, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0,50)

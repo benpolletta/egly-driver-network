@@ -575,7 +575,7 @@ if __name__=='__main__':
     all_J_RSg=['15 * uA * cmeter ** -2'] #['20 * uA * cmeter ** -2']
     all_J_FSg=['-5 * uA * cmeter ** -2']
     all_thal=[10* msiemens * cm **-2]
-    all_theta=['mixed']
+    all_theta=['good']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]
