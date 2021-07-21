@@ -752,8 +752,8 @@ if __name__=='__main__':
 
 #    all_J_RSg=['-10 * uA * cmeter ** -2','-5 * uA * cmeter ** -2','0 * uA * cmeter ** -2','5 * uA * cmeter ** -2','10 * uA * cmeter ** -2','15 * uA * cmeter ** -2','20 * uA * cmeter ** -2']
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
-#    all_thal=[10* msiemens * cm **-2]
     all_thal=[10* msiemens * cm **-2]
+#    all_thal=[0* msiemens * cm **-2]
     all_theta=['good']
     #all_theta=['mixed','mixed','mixed','mixed','mixed']
     
@@ -801,4 +801,4 @@ if __name__=='__main__':
     for simu in all_sim:
         run_one_simulation(simu,path,index_var)
     
-    # clear_cache('cython')    
+    # clear_cache('cython') 
