@@ -26,7 +26,7 @@ def create_superficial_layer(kainate,version,Nf=1):
     ##Define neuron groups
     N_RS,N_FS,N_SI,N_IB= Nf*80,Nf*20,Nf*20,Nf*20 #Number of neurons of RE, TC, and HTC type
     
-    RS=NeuronGroup(N_RS,eq_RS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    RS=NeuronGroup(N_RS,eq_RS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='RSsupLIP')
     RS.V = '-70*mvolt+10*rand()*mvolt'
     RS.h = '0+0.05*rand()'
     RS.m = '0+0.05*rand()'
@@ -41,8 +41,7 @@ def create_superficial_layer(kainate,version,Nf=1):
     elif kainate=='high':
         RS.J='-10 * uA * cmeter ** -2'  #article SI=25, code=1
         
-    FS=NeuronGroup(N_FS,eq_FS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
-    FS.V = '-110*mvolt+10*rand()*mvolt'
+    FS=NeuronGroup(N_FS,eq_FS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='FSsupLIP')
     FS.h = '0+0.05*rand()'
     FS.m = '0+0.05*rand()'
     if kainate=='low':
@@ -50,7 +49,7 @@ def create_superficial_layer(kainate,version,Nf=1):
     elif kainate=='high':
         FS.J='16 * uA * cmeter ** -2'
     
-    SI=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    SI=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='SIsupLIP')
     SI.V = '-100*mvolt+10*rand()*mvolt'
     SI.h = '0+0.05*rand()'
     SI.m = '0+0.05*rand()'

@@ -115,7 +115,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     #Single column network
     
     ##Define neuron groups
-    E_gran=NeuronGroup(N_FS,eq_RS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    E_gran=NeuronGroup(N_FS,eq_RS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='RSgranLIP')
     E_gran.V = '-70*mvolt+10*rand()*mvolt'
     E_gran.h = '0+0.05*rand()'
     E_gran.m = '0+0.05*rand()'
@@ -126,7 +126,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     elif kainate=='high':
         E_gran.J='-10 * uA * cmeter ** -2'  #article SI=25, code=1
         
-    FS_gran=NeuronGroup(N_FS,eq_FS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    FS_gran=NeuronGroup(N_FS,eq_FS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='FSgranLIP')
     FS_gran.V = '-110*mvolt+10*rand()*mvolt'
     FS_gran.h = '0+0.05*rand()'
     FS_gran.m = '0+0.05*rand()'
@@ -136,7 +136,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     elif kainate=='high':
         FS_gran.J='16 * uA * cmeter ** -2'
     
-    SI_deep=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    SI_deep=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='SIdeepLIP')
     SI_deep.V = '-100*mvolt+10*rand()*mvolt'
     SI_deep.h = '0+0.05*rand()'
     SI_deep.m = '0+0.05*rand()'
@@ -402,6 +402,17 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     inpmon=StateMonitor(E_gran,'sinp',record=True)
     #graninpmon=StateMonitor(FS,'IsynEgran',record=[0])
     inpIBmon=StateMonitor(SI_deep,'Iapp',record=[0])
+    
+    targets=[]
+    for i in range(len(all_synapses)):
+        targets.append(all_synapses[i].target.name)
+    #RSsupTargeting = [1 for x in targets if x=='RSsupLIP']
+    RSsupTargeting = [i for i, x in enumerate(targets) if x=='RSsupLIP']
+    
+    #for i in range(len(RSsupTargeting)):
+    #    all_monitors+=StateMonitor(all_synapses[RSsupTargeting[i]])
+    #for property, value in vars(all_monitors[6].variables).items():
+    #    print(property, ": ", value)
 
     all_neurons=all_neurons+(E_gran,FS_gran,SI_deep)+tuple(g_inputs)
     all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_SIdeepIB,S_SIdeepFSgran)+tuple(syn_inputs)
@@ -474,12 +485,11 @@ def run_one_simulation(simu,path,index_var):
     all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors
     
-    
     net.add(all_neurons)
     net.add(all_synapses)
     net.add(all_gap_junctions)
 #    net.add(all_monitors)
-    net.add((V1,R1,R2,R3,R4,R5,R6,R7,inpmon,inpIBmon))
+    net.add((V1,I1,R1,R2,R3,R4,R5,R6,R7,inpmon,inpIBmon))
     
 #    taurinp=0.1*ms
 #    taudinp=0.5*ms    
@@ -525,17 +535,27 @@ def run_one_simulation(simu,path,index_var):
     
     min_t=int(50*ms*100000*Hz)
 #    min_t=int(150*ms*100000*Hz)
-    LFP_V_RS=1/N_RS*sum(V1.V,axis=0)[min_t:]
+    LFP_V_RS=1/N_RS*sum(V1.V,axis=0)#[min_t:]
+    LFP_I_RS = 1/N_RS*sum(I1.Isyn,axis=0)
 #    LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
 #    LFP_V_SI=1/N_SI62.903225806451616*sum(V3.V,axis=0)[min_t:]
 #    LFP_V_IB=1/N_IB*sum(V4.V,axis=0)[min_t:]
 #    LFP_V_RSg=1/N_FS*sum(V5.V,axis=0)[min_t:]
 #    LFP_V_FSg=1/N_FS*sum(V6.V,axis=0)[min_t:]
 #    LFP_V_SId=1/N_SI*sum(V7.V,axis=0)[min_t:]
+    
+    
+    figure()
+    subplot(211)
+    plot(LFP_V_RS)
+    
+    subplot(212)
+    plot(LFP_I_RS)
 
     
 #    f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
-    f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='density')
+    f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS[min_t:], 100000,'flattop', scaling='density')
+    f,Spectrum_LFP_I_RS=signal.periodogram(LFP_I_RS[min_t:], 100000,'flattop', scaling='density')
 #    f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
 #    f,Spectrum_LFP_V_SI=signal.periodogram(LFP_V_SI, 100000,'flattop', scaling='spectrum')
 #    f,Spectrum_LFP_V_IB=signal.periodogram(LFP_V_IB, 100000,'flattop', scaling='spectrum')
@@ -543,24 +563,97 @@ def run_one_simulation(simu,path,index_var):
 #    f,Spectrum_LFP_V_FSg=signal.periodogram(LFP_V_FSg, 100000,'flattop', scaling='spectrum')
 #    f,Spectrum_LFP_V_SId=signal.periodogram(LFP_V_SId, 100000,'flattop', scaling='spectrum')
     
-    record_dt=1/512*second
+    figure()
+    plot(f,Spectrum_LFP_V_RS)
+    ylabel('Spectrum')
+    xlabel('Frequency (Hz)')
+    xlim(0,100)
+    
+    figure()
+    plot(f,Spectrum_LFP_I_RS)
+    ylabel('Spectrum')
+    xlabel('Frequency (Hz)')
+    xlim(0,100)
+    
+    record_dt=1/100000*second#1/512*second
     t=int(0.3*second/record_dt) #t_debut
     L=int(2*second/record_dt)
     fs = 1/record_dt
-    freq = linspace(1/second, fs/2, 100)
-    widths = 6*fs/(2*freq*pi)
     
-    CWT = signal.cwt(LFP_LIP, signal.morlet2, widths, w=6)
+    def flipEnds(mat, end_length):
+        beginning = mat[0:end_length, :]
+        ending = mat[-end_length-1:-1, :]
+        flipped = vstack((flipud(beginning), mat, flipud(ending)))
+        return flipped
     
-    figure()
-    plot(LFP_V_RS)
+    end_length = 5000
+    LFPflip = flipEnds(LFP_I_RS[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
+    
+    def pctMean(mat, ax):
+        diagMean = diag(nanmean(mat, axis=ax))
+        matMean = ones(shape(mat))
+        if ax == 0:
+            matMean = matmul(ones(shape(mat)), diagMean)
+        else:
+            matMean = matmul(diagMean, ones(shape(mat)))
+        normed = (mat - matMean)/matMean
+        return normed
+    
+    f, t, Sxx = signal.spectrogram(transpose(LFPflip), fs, nperseg=25000, noverlap=20000)
+    pctSxx = pctMean(Sxx, 1)
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V1.t[min_t:], freq, CWT, cmap='RdBu')#, shading='gouraud')
+    pcolormesh(t, f, pctSxx)#, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
-    ylim(0,50)
+    ylim(0, 75)
+    
+    #freq = logspace(0, 2, 50)*Hz
+    freq = linspace(1/second, 100*Hz, 100)
+    #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
+    widths = linspace(3, 30, 100)*fs/(2*freq*pi)
+    
+    CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths)
+    CWT = CWT[:, end_length:-end_length]
+    # CWTmean = diag(mean(CWT, axis=1))
+    # mean_mat = matmul(CWTmean, ones(shape(CWT)))
+    # CWTpct = (CWT - mean_mat)/mean_mat
+    CWTpct = pctMean(CWT, 1)
+    
+    figure()
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t, freq, absolute(CWT))#, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0, 75)
+    
+    figure()
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t[min_t:], freq, CWTpct)#, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0, 75)
+    
+    #nanmat = empty((len(freq),5000))
+    #nanmat[:] = NaN
+    #CWTfilled = hstack((nanmat, CWT))
+    CWTfolded = CWT.reshape((len(freq), 25000, 8), order='F')
+    CWTmeanTheta = nanmean(CWTfolded, axis = 2)
+    CWTpctTheta = pctMean(absolute(CWTmeanTheta), 1)
+    
+    # for i in arange(8): 
+    #     subplot(4, 2, i+1)
+    #     pcolormesh(V1.t[0:25000], freq, absolute(CWTfolded[:,:,i]))
+    
+    figure()
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t[0:25000], freq, CWTpctTheta)#, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0, 75)
+    colorbar()
+    
     
 #    figure(figsize=(10,8))    
 #    subplot(421)
@@ -620,18 +713,6 @@ def run_one_simulation(simu,path,index_var):
     legend(loc='upper left')
     xlabel('Time (s)')
     ylabel('Neuron index')
-    
-    figure()
-    plot(f,Spectrum_LFP_V_RS)
-    ylabel('Spectrum')
-    xlabel('Frequency (Hz)')
-    xlim(0,100)
-    
-    figure()
-    plot(f,Spectrum_LFP_V_RS)
-    ylabel('Spectrum')
-    xlabel('Frequency (Hz)')
-    xlim(0,50)
     
     figure()
     plot(R1.t,R1.i+140,'r.',label='RS cells')
@@ -707,7 +788,7 @@ def run_one_simulation(simu,path,index_var):
 #    title('IB cell')
     
     ##save figures
-    new_path=path+"/results_"+str(index)
+    new_path=path+str(index)
     os.mkdir(new_path)
 
     for n in get_fignums():
@@ -721,6 +802,7 @@ def run_one_simulation(simu,path,index_var):
     save_raster('LIP_FS_gran',R6.i,R6.t,new_path)
     save_raster('LIP_IB',R4.i,R4.t,new_path)
     save_raster('LIP_SI_deep',R7.i,R7.t,new_path)
+    save_raster('LIP_RS_V',V1.V,V1.t,new_path)
 
     
 if __name__=='__main__':
@@ -754,7 +836,7 @@ if __name__=='__main__':
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
     all_thal=[10* msiemens * cm **-2]
 #    all_thal=[0* msiemens * cm **-2]
-    all_theta=['good']
+    all_theta=['mixed']
     #all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
@@ -775,7 +857,8 @@ if __name__=='__main__':
     all_syn_cond=list(product(all_SIdFSg,all_FSgRSg,all_RSgFSg,all_RSgRSg,all_FSgFSg,all_RSgRSs,all_RSgFSs,all_FSgRSs))
     all_J=list(product(all_J_RSg,all_J_FSg))
     
-    path="./results_"+str(datetime.datetime.now())
+    this_time=datetime.datetime.now()
+    path="./sims/LFP_full_"+this_time.strftime("%y-%m-%d_%H-%M-%S")
     os.mkdir(path)
         
     all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta))

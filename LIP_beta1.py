@@ -31,13 +31,13 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     #Single column network
     
     ##Define neuron groups 
-    IB_soma=NeuronGroup(N_IB,eq_IB_soma,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    IB_soma=NeuronGroup(N_IB,eq_IB_soma,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='IBsoma')
     IB_soma.V = '-100*mvolt+10*rand()*mvolt'
     IB_soma.h = '0+0.05*rand()'
     IB_soma.m = '0+0.05*rand()'
     IB_soma.J='-4.5 * uA * cmeter ** -2' #article SI=-3.5, code=-4.5
     
-    IB_axon=NeuronGroup(N_IB,eq_IB_axon,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    IB_axon=NeuronGroup(N_IB,eq_IB_axon,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='IBaxon')
     IB_axon.V = '-100*mvolt+10*rand()*mvolt'
     IB_axon.h = '0+0.05*rand()'
     IB_axon.m = '0+0.05*rand()'
@@ -47,7 +47,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     elif kainate=='high':
         IB_axon.J='-6 * uA * cmeter ** -2' #article SI=+0.1, code=-0.4
     
-    IB_ad=NeuronGroup(N_IB,eq_IB_ad,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    IB_ad=NeuronGroup(N_IB,eq_IB_ad,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='IBad')
     IB_ad.V = '-100*mvolt+10*rand()*mvolt'
     IB_ad.h = '0+0.05*rand()'
     IB_ad.m = '0+0.05*rand()'
@@ -59,7 +59,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     elif kainate=='high':
         IB_ad.J='23.5 * uA * cmeter ** -2'  #article SI=27.5, code=25.5
     
-    IB_bd=NeuronGroup(N_IB,eq_IB_bd,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    IB_bd=NeuronGroup(N_IB,eq_IB_bd,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='IBbd')
     IB_bd.V = '-100*mvolt+10*rand()*mvolt'
     IB_bd.h = '0+0.05*rand()'
     IB_bd.m = '0+0.05*rand()'
