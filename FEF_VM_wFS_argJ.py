@@ -289,6 +289,7 @@ if __name__=='__main__':
             save_raster('SI',R6.i,R6.t,sim_dir)
             save_raster('VIP',R7.i,R7.t,sim_dir)
             save_raster('FS',R8.i,R8.t,sim_dir)
+            save_raster('V_RS',V_RS.V,V_RS.t,sim_dir)
             
             V_file=open(sim_dir,'/V_RS.txt','w')
             for elem in V_RS:

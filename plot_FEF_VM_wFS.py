@@ -8,6 +8,7 @@ Created on Wed Jun  3 14:40:22 2020
 from brian2 import *
 import matplotlib.gridspec as gridspec
 import scipy.signal as signal
+import os
 
 def read_raster_times_and_indexes(file_t,file_i):
     all_times=[]
@@ -33,9 +34,8 @@ def read_raster_times_and_indexes(file_t,file_i):
     return array(all_times),array(all_i) 
 
 def spike_train_from_raster(ras_t,runtime):
-    record_dt=1/512*second
-    L=int(runtime*second/record_dt)
-    tvec=arange(0,L*second+record_dt,record_dt)
+    record_dt=1/100000*second
+    tvec=arange(0,runtime*second,record_dt)
     spiketrain=zeros(shape(tvec))
     for i in range(len(ras_t)):
         tdist=abs(tvec-ras_t[i]*second)
@@ -82,83 +82,86 @@ L=int(2*second/record_dt)
 
 fig = figure(figsize=(12,12))
     
-outer = gridspec.GridSpec(11, 11)
+outer = gridspec.GridSpec(8, 8, wspace=0.01)
 
-for pset in range(len(params)):
+for pset in arange(0, len(params), 2):
     
-    all_raster=get_raster_Jgg(J,params[pset][0],params[pset][1])
+    pset_dir="sims/FEF_VM_wFS_J"+str(J)+"_gFS"+str(params[pset][0])+"_gVS"+str(params[pset][1])
     
-    spiketrain, tvec=spike_train_from_raster(all_raster[0][0], 2)
+    if os.path.exists(pset_dir):
+        
+        all_raster=get_raster_Jgg(J,params[pset][0],params[pset][1])
+        
+        spiketrain, tvec=spike_train_from_raster(all_raster[0][0], 2)
+        
+        record_dt=1/100000*second#1/512*second
+        t=int(0.3*second/record_dt) #t_debut
+        L=int(2*second/record_dt)
+        fs = 1/record_dt
+        min_t=int(50*ms*fs)
+        
+        def flipEnds(mat, end_length):
+            beginning = mat[0:end_length, :]
+            ending = mat[-end_length-1:-1, :]
+            flipped = vstack((flipud(beginning), mat, flipud(ending)))
+            return flipped
+        
+        end_length = 5000
+        STflip = flipEnds(spiketrain[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
+        
+        def pctMean(mat, ax):
+            diagMean = diag(nanmean(mat, axis=ax))
+            matMean = ones(shape(mat))
+            if ax == 0:
+                matMean = matmul(ones(shape(mat)), diagMean)
+            else:
+                matMean = matmul(diagMean, ones(shape(mat)))
+            normed = (mat - matMean)/matMean
+            return normed
+        
+        f, t, Sxx = signal.spectrogram(squeeze(STflip), fs, nperseg=25000, noverlap=20000)
+        pctSxx = pctMean(Sxx, 1)
+        
+        #freq = logspace(0, 2, 50)*Hz
+        freq = linspace(1/second, 100*Hz, 100)
+        #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
+        widths = linspace(3, 30, 100)*fs/(2*freq*pi)
+        
+        CWT = signal.cwt(squeeze(STflip), signal.morlet2, widths)
+        CWT = CWT[:, end_length:-end_length]
+        CWTpct = pctMean(CWT, 1)
+        
+        #subplot(outer[pset])#floor(pset/11), rem(pset,11)])
+        
+        inner = outer[int(floor(pset/2))].subgridspec(2,1)#gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=outer[floor(pset/2)])#floor(pset/11),rem(pset,11)])
     
-    record_dt=1/100000*second#1/512*second
-    t=int(0.3*second/record_dt) #t_debut
-    L=int(2*second/record_dt)
-    fs = 1/record_dt
-    
-    def flipEnds(mat, end_length):
-        beginning = mat[0:end_length, :]
-        ending = mat[-end_length-1:-1, :]
-        flipped = vstack((flipud(beginning), mat, flipud(ending)))
-        return flipped
-    
-    end_length = 5000
-    LFPflip = flipEnds(LFP_I_RS[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
-    
-    def pctMean(mat, ax):
-        diagMean = diag(nanmean(mat, axis=ax))
-        matMean = ones(shape(mat))
-        if ax == 0:
-            matMean = matmul(ones(shape(mat)), diagMean)
-        else:
-            matMean = matmul(diagMean, ones(shape(mat)))
-        normed = (mat - matMean)/matMean
-        return normed
-    
-    f, t, Sxx = signal.spectrogram(transpose(LFPflip), fs, nperseg=25000, noverlap=20000)
-    pctSxx = pctMean(Sxx, 1)
-    
-    inner = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=outer[floor(pset/11),rem(pset,11)])
+        fig.add_subplot(inner[0])#outer[floor(pset/11),rem(pset,11)])
+        ax = gca()#subplot(inner[0])
+        plot(all_raster[0][0],all_raster[0][1],'k.',label="RS")
+                
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        
+        xlim(0,runtime/second)
+    #    legend(loc='upper left')
+    #    xlabel('Time (s)')
+    #    ylabel('Neuron index')
+        ylim(-1,21)
+        
+        tight_layout(pad=.1)
+        
+        ax = subplot(inner[1])
+        pcolormesh(t[t>.5], f, pctSxx[:, t>.5])#(tvec, freq, absolute(CWT))#, shading='gouraud')
+        ylabel('Frequency [Hz]')
+        xlabel('Time [sec]')
+        ylim(0,50)
+                
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        
+        tight_layout(pad=.1)
 
-    fig.add_subplot(outer[floor(pset/11),rem(pset,11)])
-    ax=Subplot(fig, inner[0])
-    plot(all_raster[0][0],all_raster[0][1],'k.',label="RS")
-            
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    
-    xlim(0,runtime/second)
-#    legend(loc='upper left')
-#    xlabel('Time (s)')
-#    ylabel('Neuron index')
-    ylim(-1,21)
-    
-    tight_layout()
-    
-    figure()
-    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(t, f, pctSxx)#, cmap='RdBu')#, shading='gouraud')
-    ylabel('Frequency [Hz]')
-    xlabel('Time [sec]')
-    ylim(0, 75)
-    
-    #freq = logspace(0, 2, 50)*Hz
-    freq = linspace(1/second, 100*Hz, 100)
-    #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
-    widths = linspace(3, 30, 100)*fs/(2*freq*pi)
-    
-    CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths)
-    CWT = CWT[:, end_length:-end_length]
-    CWTpct = pctMean(CWT, 1)
-            
-    CWT = signal.cwt(spiketrain, signal.morlet2, widths, w=6)
-    
-    ax=Subplot(fig, inner[1])
-    pcolormesh(tvec, freq, CWT)#, shading='gouraud')
-    ylabel('Frequency [Hz]')
-    xlabel('Time [sec]')
-    ylim(0,50)
-
-savefig("sims/FEF_VM_wFS_J"+str(J)+'_gFS'+str(gFSSI[gf])+'_raster.png')
+savefig("sims/FEF_VM_wFS_J"+str(J)+'_rasters_collected.png')
 
 
 # all_names=["RS","FS","SI","VIP"]
