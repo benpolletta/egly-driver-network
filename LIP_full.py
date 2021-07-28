@@ -536,7 +536,7 @@ def run_one_simulation(simu,path,index_var):
     min_t=int(50*ms*100000*Hz)
 #    min_t=int(150*ms*100000*Hz)
     LFP_V_RS=1/N_RS*sum(V1.V,axis=0)#[min_t:]
-    LFP_I_RS = 1/N_RS*sum(I1.Isyn,axis=0)
+    LFP_I_RS = 1/N_RS*sum(I1.Isyn, axis=0)
 #    LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
 #    LFP_V_SI=1/N_SI62.903225806451616*sum(V3.V,axis=0)[min_t:]
 #    LFP_V_IB=1/N_IB*sum(V4.V,axis=0)[min_t:]
@@ -548,7 +548,6 @@ def run_one_simulation(simu,path,index_var):
     figure()
     subplot(211)
     plot(LFP_V_RS)
-    
     subplot(212)
     plot(LFP_I_RS)
 
@@ -564,12 +563,12 @@ def run_one_simulation(simu,path,index_var):
 #    f,Spectrum_LFP_V_SId=signal.periodogram(LFP_V_SId, 100000,'flattop', scaling='spectrum')
     
     figure()
+    subplot(211)
     plot(f,Spectrum_LFP_V_RS)
     ylabel('Spectrum')
     xlabel('Frequency (Hz)')
     xlim(0,100)
-    
-    figure()
+    subplot(212)
     plot(f,Spectrum_LFP_I_RS)
     ylabel('Spectrum')
     xlabel('Frequency (Hz)')
@@ -599,8 +598,8 @@ def run_one_simulation(simu,path,index_var):
         normed = (mat - matMean)/matMean
         return normed
     
-    f, t, Sxx = signal.spectrogram(transpose(LFPflip), fs, nperseg=25000, noverlap=20000)
-    pctSxx = pctMean(Sxx, 1)
+    f, t, Sxx = signal.spectrogram(squeeze(LFPflip), fs, nperseg=25000, noverlap=20000)
+    pctSxx = pctMean(Sxx, 0)
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
@@ -630,7 +629,7 @@ def run_one_simulation(simu,path,index_var):
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V1.t[min_t:], freq, CWTpct)#, cmap='RdBu')#, shading='gouraud')
+    pcolormesh(V1.t, freq, absolute(CWTpct))#, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0, 75)
@@ -645,6 +644,14 @@ def run_one_simulation(simu,path,index_var):
     # for i in arange(8): 
     #     subplot(4, 2, i+1)
     #     pcolormesh(V1.t[0:25000], freq, absolute(CWTfolded[:,:,i]))
+    
+    figure()
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t[0:25000], freq, absolute(CWTmeanTheta))#, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0, 75)
+    colorbar()
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
