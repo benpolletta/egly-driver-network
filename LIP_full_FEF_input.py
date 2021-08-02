@@ -54,6 +54,29 @@ def save_raster(name,raster_i,raster_t,path):
         raster_file.write(str(elem)+',')
     raster_file.close()
     return
+
+def read_raster_times_and_indexes(file_t,file_i):
+    all_times=[]
+    raster_t=open(file_t,'r')
+    for line in raster_t:
+        time_str=line.split(',')[:-1]
+    for line in time_str:
+        if line[-2]=='m':
+            time=float(line[:-2])*msecond
+        elif line[-2]=='u':
+            time=float(line[:-2])*usecond
+        else :
+            time=float(line[:-1])*second
+        all_times.append(time)
+    raster_t.close()
+        
+    all_i=[]
+    raster_i=open(file_i,'r')
+    for line in raster_i:
+        all_i=line.split(',')[:-1]
+    all_i=[int(i) for i in all_i]
+    raster_i.close()
+    return array(all_times),array(all_i) 
     
 def make_full_network(syn_cond,J,thal,theta_phase):
     
@@ -359,9 +382,13 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         topdown_in.connect(j='i')
         
         #theta=4Hz
-        file_t=input_path+'_t.txt'
-        file_i=input_path+'_i.txt'
-        inputs_topdown3=read_raster_times_and_indices(file_t,file_i)
+        file_t=input_path+'/raster_RS_t.txt'
+        print("Reading times from "+file_t)
+        file_i=input_path+'/raster_RS_i.txt'
+        print("Reading indices from "+file_i)
+        ras_t,ras_i=read_raster_times_and_indexes(file_t,file_i)
+        ras_mat = concatenate((ras_t[:, None], ras_i[:, None]), axis = 1)
+        inputs_topdown3 = ras_mat[ras_mat[:,0].argsort(),]
         #inputs_topdown3=generate_spike_timing_theta(N_SI,beta2freq,0*ms,end_time=5100*ms)
 #        #theta=8Hz
 #        inputs_topdown3=generate_spike_timing_theta(N_SI,25*Hz,0*ms,end_time=5100*ms,f_theta=8*Hz)
@@ -384,9 +411,9 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #    print(Poisson_input2)
     
     g_inputs=[G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2]
-    g_inputs=[y for y in g_inputs if y]
+    g_inputs=[y for y in g_inputs if y] # Removes empty positions.
     syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2]
-    syn_inputs=[y for y in syn_inputs if y]
+    syn_inputs=[y for y in syn_inputs if y] # Removes empty positions.
     
 #    print(len(g_inputs))
 #    print(len(syn_inputs))
@@ -405,6 +432,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     inpmon=StateMonitor(E_gran,'sinp',record=True)
     #graninpmon=StateMonitor(FS,'IsynEgran',record=[0])
     inpIBmon=StateMonitor(SI_deep,'Iapp',record=[0])
+    FEFinput = SpikeMonitor(G_topdown3, record=True)
     
     targets=[]
     for i in range(len(all_synapses)):
@@ -419,7 +447,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 
     all_neurons=all_neurons+(E_gran,FS_gran,SI_deep)+tuple(g_inputs)
     all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_SIdeepIB,S_SIdeepFSgran)+tuple(syn_inputs)
-    all_monitors=all_monitors+(R5,R6,R7,V5,V6,V7,inpmon,inpIBmon)
+    all_monitors=all_monitors+(R5,R6,R7,V5,V6,V7,inpmon,inpIBmon,FEFinput)
     return all_neurons, all_synapses, all_gap_junctions, all_monitors
 
 
@@ -486,13 +514,13 @@ def run_one_simulation(simu,path,index_var,input_path):
     
     print('Network setup')
     all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
-    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors
+    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon,FEFinput=all_monitors
     
     net.add(all_neurons)
     net.add(all_synapses)
     net.add(all_gap_junctions)
 #    net.add(all_monitors)
-    net.add((V1,I1,R1,R2,R3,R4,R5,R6,R7,inpmon,inpIBmon))
+    net.add((V1,I1,R1,R2,R3,R4,R5,R6,R7,inpmon,inpIBmon,FEFinput))
     
 #    taurinp=0.1*ms
 #    taudinp=0.5*ms    
@@ -534,7 +562,10 @@ def run_one_simulation(simu,path,index_var,input_path):
 #    print(inpIBmon.Iapp[0])
     
     figure()
+    subplot(211)
     plot(inpIBmon.t,inpIBmon.Iapp[0])
+    subplot(212)
+    plot(FEFinput.t,FEFinput.i)
     
     min_t=int(50*ms*100000*Hz)
 #    min_t=int(150*ms*100000*Hz)
@@ -689,7 +720,9 @@ def run_one_simulation(simu,path,index_var,input_path):
     
     ##save figures
     new_path=path+str(index)
-    os.mkdir(new_path)
+        
+    if not os.path.exists(new_path):
+        os.mkdir(new_path)
 
     for n in get_fignums():
         current_fig=figure(n)
@@ -710,8 +743,8 @@ if __name__=='__main__':
     JSOM=sys.argv[1]
     gFS=sys.argv[2]
     gVS=sys.argv[3]
-    name = 'FEF_LIP_J'+str(JSOM)+'_gFS'+str(gFS)+'_gVS'+str(gVS)
-    sim_dir = 'sims/'+name
+    name = 'FEF_VM_wFS_J'+str(JSOM)+'_gFS'+str(gFS)+'_gVS'+str(gVS)
+    input_path = 'sims/'+name
         
     Vlow=-80*mV
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
@@ -764,7 +797,7 @@ if __name__=='__main__':
     all_J=list(product(all_J_RSg,all_J_FSg))
     
     this_time=datetime.datetime.now()
-    path="./sims/LFP_full_"+this_time.strftime("%y-%m-%d_%H-%M-%S")
+    path="./sims/LFP_full_FEF_input_"+this_time.strftime("%y-%m-%d_%H-%M-%S")
     os.mkdir(path)
         
     all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta))

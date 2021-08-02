@@ -251,13 +251,13 @@ if __name__=='__main__':
     # J=[]
     for step in range(11):
         gFSSI.append(1+step*3/10)
-        gVIPSI.append(1-step/10)
+        gVIPSI.append(round(10*(1-step/10))/10)
     #    J.append(-10+3*step)
         
     params=transpose([tile(gFSSI, len(gVIPSI)), repeat(gVIPSI, len(gFSSI))])
     # params=transpose([tile(J, len(params)), repeat(params, len(J))])
     
-    if len(argv) < 1:
+    if len(sys.argv) < 1:
         J=0
     else:
         J=sys.argv[1]
@@ -291,10 +291,10 @@ if __name__=='__main__':
             save_raster('FS',R8.i,R8.t,sim_dir)
             save_raster('V_RS',V_RS.V,V_RS.t,sim_dir)
             
-            V_file=open(sim_dir,'/V_RS.txt','w')
+            V_file=open(sim_dir+'/V_RS.txt','w')
             for elem in V_RS:
-                raster_file.write(str(elem)+',')
-            raster_file.close()
+                V_file.write(str(elem)+',')
+            V_file.close()
             
             figure()
             plot(R7.t,R7.i+0,'k.',label='VIP')
