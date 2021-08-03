@@ -11,9 +11,10 @@ from brian2 import *
 import os
 import sys
 
-cache_dir=os.env['TMPDIR']
-prefs.codegen.runtime.cython.cache_dir = cache_dir
-prefs.codegen.runtime.cython.multiprocess_safe = False
+if sys.platform=='linux':
+    cache_dir=os.env['TMPDIR']
+    prefs.codegen.runtime.cython.cache_dir = cache_dir
+    prefs.codegen.runtime.cython.multiprocess_safe = False
 
 start_scope()
 
