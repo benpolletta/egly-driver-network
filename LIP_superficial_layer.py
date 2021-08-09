@@ -54,6 +54,7 @@ def create_superficial_layer(kainate,version,Nf=1):
     SI.h = '0+0.05*rand()'
     SI.m = '0+0.05*rand()'
     SI.mAR = '0.02+0.04*rand()'
+    SI.ginp_SI='20 * msiemens * cm ** -2'
     if version == 'Alex':
         if kainate=='low':
             SI.J='35* uA * cmeter ** -2' #article SI=50, code=35, Mark = 45
@@ -205,6 +206,8 @@ if __name__=='__main__' :
     random_init_IB=False #All figures except 1e and 2g
     
     input_beta=False
+        
+    sinp_SI=TimedArray([0,1,0], dt=667*ms)
     
     Vrev_inp=0*mV
     taurinp=0.1*ms

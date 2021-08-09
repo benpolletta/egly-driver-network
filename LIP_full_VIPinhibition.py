@@ -55,7 +55,7 @@ def save_raster(name,raster_i,raster_t,path):
     raster_file.close()
     return
     
-def make_full_network(syn_cond,J,thal,theta_phase):
+def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     
 #    print(syn_cond,J,thal,theta_phase)    
     
@@ -70,6 +70,11 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     version = 'Alex'
     runtime=3*second
     kainate='low'
+    
+    timeslots=zeros((int(around(runtime*10/second)),1))
+    target_time = target_time/(100*ms)
+    timeslots[int(around(target_time))]=1
+    sinp_SI=TimedArray(timeslots, dt=100*ms)
     
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
@@ -296,7 +301,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #        E_gran.ginp_RS=thal_cond
         Poisson_input2 = SpikeGeneratorGroup(N_FS, inputs_mdpul[:,1], inputs_mdpul[:,0]*second)
 #        Poisson_input2 = PoissonGroup(N_FS,100*Hz)
-        bottomup_in2 = Synapses(Poisson_input2,E_gran, on_pre='Vinp=Vhigh')
+        bottomup_in2 = Synapses(Poisson_input2, E_gran, on_pre='Vinp=Vhigh')
         bottomup_in2.connect(j='i')
     #    print(bottomup_in,bottomup_in2)
     
@@ -380,9 +385,16 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #    print(E_gran.ginp_RS_good)
 #    print(Poisson_input2)
     
-    g_inputs=[G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2]
+    # VIPinhibition = generate_spike_timing(N_SI, 50*Hz, target_time, end_time=target_time+1000*ms)
+    # VIP = SpikeGeneratorGroup(N_SI, VIPinhibition[:,1], VIPinhibition[:,0]*second)
+    # S_VIPSI=Synapses(VIP,SI,on_pre='Vinp=-80*mV')
+    # S_VIPSI.connect(j='i')
+    # S_VIPSI=generate_syn(VIP,SI,'IsynVIP','',10*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
+    # S_VIPSI.connect(j='i')
+    
+    g_inputs=[G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2]#,VIP]
     g_inputs=[y for y in g_inputs if y]
-    syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2]
+    syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2]#,S_VIPSI]
     syn_inputs=[y for y in syn_inputs if y]
     
 #    print(len(g_inputs))
@@ -399,9 +411,9 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     V7=StateMonitor(SI_deep,'V',record=True)
     
 #    inpmon=StateMonitor(E_gran,'Iinp1',record=True)
-    inpmon=StateMonitor(E_gran,'sinp',record=True)
+    inpmon=StateMonitor(SI,'sinp',record=True)
     #graninpmon=StateMonitor(FS,'IsynEgran',record=[0])
-    inpIBmon=StateMonitor(SI_deep,'Iapp',record=[0])
+    inpIBmon=StateMonitor(SI,'Iapp',record=[0])
     
     targets=[]
     for i in range(len(all_synapses)):
@@ -435,13 +447,13 @@ def run_one_simulation(simu,path,index_var):
     Vhigh=0*mV
     Vlow=-80*mV
     ginp_IB=0* msiemens * cm **-2
-    ginp_SI=0* msiemens * cm **-2
+    ginp_SI=10* msiemens * cm **-2
     ginp=0* msiemens * cm **-2
 
     NN=1 #multiplicative factor on the number of neurons
     N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
     
-    syn_cond,J,thal,theta_phase,index=simu
+    syn_cond,J,thal,theta_phase,target_time,index=simu
     print('Simulation '+str(index))
     
     if theta_phase=='bad':
@@ -481,8 +493,14 @@ def run_one_simulation(simu,path,index_var):
     
     net = Network(collect())
     
+    target_time=500*ms
+    timeslots=zeros((int(around(runtime*10/second)),))
+    target_index = int(around(target_time/(100*ms)))
+    timeslots[target_index]=1
+    sinp_SI=TimedArray(array(timeslots), dt=100*ms)
+    
     print('Network setup')
-    all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
+    all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase,target_time)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors
     
     net.add(all_neurons)
@@ -505,16 +523,16 @@ def run_one_simulation(simu,path,index_var):
     
     net.run(runtime,report='text',report_period=300*second)
     
-    figure()
-    plot(R1.t,R1.i+140,'r.',label='RS cells')
-    plot(R2.t,R2.i+120,'m.',label='FS cells')
-    plot(R3.t,R3.i+100,'y.',label='SI cells')
-    plot(R5.t,R5.i+70,'g.',label='Granular RS')
-    plot(R6.t,R6.i+50,'c.',label='Granular FS')
-    plot(R4.t,R4.i+20,'b.',label='IB cells')
-    plot(R7.t,R7.i,'k.',label='Deep SI')
-    xlim(0,runtime/second)
-    legend(loc='upper left')
+    # figure()
+    # plot(R1.t,R1.i+140,'r.',label='RS cells')
+    # plot(R2.t,R2.i+120,'m.',label='FS cells')
+    # plot(R3.t,R3.i+100,'y.',label='SI cells')
+    # plot(R5.t,R5.i+70,'g.',label='Granular RS')
+    # plot(R6.t,R6.i+50,'c.',label='Granular FS')
+    # plot(R4.t,R4.i+20,'b.',label='IB cells')
+    # plot(R7.t,R7.i,'k.',label='Deep SI')
+    # xlim(0,runtime/second)
+    # legend(loc='upper left')
     
     figure()
 #    plot(inpmon.t,inpmon.Iinp1[0])
@@ -530,8 +548,8 @@ def run_one_simulation(simu,path,index_var):
 #    print(inpIBmon.t)
 #    print(inpIBmon.Iapp[0])
     
-    figure()
-    plot(inpIBmon.t,inpIBmon.Iapp[0])
+    # figure()
+    # plot(inpIBmon.t,inpIBmon.Iapp[0])
     
     min_t=int(50*ms*100000*Hz)
 #    min_t=int(150*ms*100000*Hz)
@@ -574,93 +592,93 @@ def run_one_simulation(simu,path,index_var):
     xlabel('Frequency (Hz)')
     xlim(0,100)
     
-    record_dt=1/100000*second#1/512*second
-    t=int(0.3*second/record_dt) #t_debut
-    L=int(2*second/record_dt)
-    fs = 1/record_dt
+    # record_dt=1/100000*second#1/512*second
+    # t=int(0.3*second/record_dt) #t_debut
+    # L=int(2*second/record_dt)
+    # fs = 1/record_dt
     
-    def flipEnds(mat, end_length):
-        beginning = mat[0:end_length, :]
-        ending = mat[-end_length-1:-1, :]
-        flipped = vstack((flipud(beginning), mat, flipud(ending)))
-        return flipped
+    # def flipEnds(mat, end_length):
+    #     beginning = mat[0:end_length, :]
+    #     ending = mat[-end_length-1:-1, :]
+    #     flipped = vstack((flipud(beginning), mat, flipud(ending)))
+    #     return flipped
     
-    end_length = 5000
-    LFPflip = flipEnds(LFP_I_RS[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
+    # end_length = 5000
+    # LFPflip = flipEnds(LFP_I_RS[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
     
-    def pctMean(mat, ax):
-        diagMean = diag(nanmean(mat, axis=ax))
-        matMean = ones(shape(mat))
-        if ax == 0:
-            matMean = matmul(ones(shape(mat)), diagMean)
-        else:
-            matMean = matmul(diagMean, ones(shape(mat)))
-        normed = (mat - matMean)/matMean
-        return normed
+    # def pctMean(mat, ax):
+    #     diagMean = diag(nanmean(mat, axis=ax))
+    #     matMean = ones(shape(mat))
+    #     if ax == 0:
+    #         matMean = matmul(ones(shape(mat)), diagMean)
+    #     else:
+    #         matMean = matmul(diagMean, ones(shape(mat)))
+    #     normed = (mat - matMean)/matMean
+    #     return normed
     
-    f, t, Sxx = signal.spectrogram(squeeze(LFPflip), fs, nperseg=25000, noverlap=20000)
-    pctSxx = pctMean(squeeze(Sxx), 0)
+    # f, t, Sxx = signal.spectrogram(squeeze(LFPflip), fs, nperseg=25000, noverlap=20000)
+    # pctSxx = pctMean(squeeze(Sxx), 0)
     
-    figure()
-    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(t, f, pctSxx)#, cmap='RdBu')#, shading='gouraud')
-    ylabel('Frequency [Hz]')
-    xlabel('Time [sec]')
-    ylim(0, 75)
+    # figure()
+    # #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    # pcolormesh(t, f, pctSxx)#, cmap='RdBu')#, shading='gouraud')
+    # ylabel('Frequency [Hz]')
+    # xlabel('Time [sec]')
+    # ylim(0, 75)
     
-    #freq = logspace(0, 2, 50)*Hz
-    freq = linspace(1/second, 100*Hz, 100)
-    #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
-    widths = linspace(3, 30, 100)*fs/(2*freq*pi)
+    # #freq = logspace(0, 2, 50)*Hz
+    # freq = linspace(1/second, 100*Hz, 100)
+    # #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
+    # widths = linspace(3, 30, 100)*fs/(2*freq*pi)
     
-    CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths)
-    CWT = CWT[:, end_length:-end_length]
-    # CWTmean = diag(mean(CWT, axis=1))
-    # mean_mat = matmul(CWTmean, ones(shape(CWT)))
-    # CWTpct = (CWT - mean_mat)/mean_mat
-    CWTpct = pctMean(CWT, 1)
+    # CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths)
+    # CWT = CWT[:, end_length:-end_length]
+    # # CWTmean = diag(mean(CWT, axis=1))
+    # # mean_mat = matmul(CWTmean, ones(shape(CWT)))
+    # # CWTpct = (CWT - mean_mat)/mean_mat
+    # CWTpct = pctMean(CWT, 1)
     
-    figure()
-    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V1.t, freq, absolute(CWT))#, cmap='RdBu')#, shading='gouraud')
-    ylabel('Frequency [Hz]')
-    xlabel('Time [sec]')
-    ylim(0, 75)
+    # figure()
+    # #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    # pcolormesh(V1.t, freq, absolute(CWT))#, cmap='RdBu')#, shading='gouraud')
+    # ylabel('Frequency [Hz]')
+    # xlabel('Time [sec]')
+    # ylim(0, 75)
     
-    figure()
-    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V1.t, freq, absolute(CWTpct))#, cmap='RdBu')#, shading='gouraud')
-    ylabel('Frequency [Hz]')
-    xlabel('Time [sec]')
-    ylim(0, 75)
+    # figure()
+    # #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    # pcolormesh(V1.t, freq, absolute(CWTpct))#, cmap='RdBu')#, shading='gouraud')
+    # ylabel('Frequency [Hz]')
+    # xlabel('Time [sec]')
+    # ylim(0, 75)
     
-    if theta_phase=='mixed':
-        #nanmat = empty((len(freq),5000))
-        #nanmat[:] = NaN
-        #CWTfilled = hstack((nanmat, CWT))
-        CWTfolded = CWT.reshape((len(freq), 25000, 8), order='F')
-        CWTmeanTheta = nanmean(CWTfolded, axis = 2)
-        CWTpctTheta = pctMean(absolute(CWTmeanTheta), 1)
+    # if theta_phase=='mixed':
+    #     #nanmat = empty((len(freq),5000))
+    #     #nanmat[:] = NaN
+    #     #CWTfilled = hstack((nanmat, CWT))
+    #     CWTfolded = CWT.reshape((len(freq), 25000, 8), order='F')
+    #     CWTmeanTheta = nanmean(CWTfolded, axis = 2)
+    #     CWTpctTheta = pctMean(absolute(CWTmeanTheta), 1)
         
-        # for i in arange(8): 
-        #     subplot(4, 2, i+1)
-        #     pcolormesh(V1.t[0:25000], freq, absolute(CWTfolded[:,:,i]))
+    #     # for i in arange(8): 
+    #     #     subplot(4, 2, i+1)
+    #     #     pcolormesh(V1.t[0:25000], freq, absolute(CWTfolded[:,:,i]))
         
-        figure()
-        #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-        pcolormesh(V1.t[0:25000], freq, absolute(CWTmeanTheta))#, cmap='RdBu')#, shading='gouraud')
-        ylabel('Frequency [Hz]')
-        xlabel('Time [sec]')
-        ylim(0, 75)
-        colorbar()
+    #     figure()
+    #     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    #     pcolormesh(V1.t[0:25000], freq, absolute(CWTmeanTheta))#, cmap='RdBu')#, shading='gouraud')
+    #     ylabel('Frequency [Hz]')
+    #     xlabel('Time [sec]')
+    #     ylim(0, 75)
+    #     colorbar()
         
-        figure()
-        #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-        pcolormesh(V1.t[0:25000], freq, CWTpctTheta)#, cmap='RdBu')#, shading='gouraud')
-        ylabel('Frequency [Hz]')
-        xlabel('Time [sec]')
-        ylim(0, 75)
-        colorbar()
+    #     figure()
+    #     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    #     pcolormesh(V1.t[0:25000], freq, CWTpctTheta)#, cmap='RdBu')#, shading='gouraud')
+    #     ylabel('Frequency [Hz]')
+    #     xlabel('Time [sec]')
+    #     ylim(0, 75)
+    #     colorbar()
     
     
 #    figure(figsize=(10,8))    
@@ -708,19 +726,19 @@ def run_one_simulation(simu,path,index_var):
     
 #    tight_layout()
     
-    figure()
-    plot(R1.t,R1.i+140,'r.',label='RS cells')
-    plot(R2.t,R2.i+120,'b.',label='FS cells')
-    plot(R3.t,R3.i+100,'g.',label='SI cells')
-    plot(R5.t,R5.i+70,'.',label='Granular RS',color='C1')
-    plot(R6.t,R6.i+50,'c.',label='Granular FS')
-    plot(R4.t,R4.i+20,'m.',label='IB cells')
-    plot(R7.t,R7.i,'.',label='Deep SI',color='lime')
-    xlim(0,runtime/second)
-    ylim(0,220)
-    legend(loc='upper left')
-    xlabel('Time (s)')
-    ylabel('Neuron index')
+    # figure()
+    # plot(R1.t,R1.i+140,'r.',label='RS cells')
+    # plot(R2.t,R2.i+120,'b.',label='FS cells')
+    # plot(R3.t,R3.i+100,'g.',label='SI cells')
+    # plot(R5.t,R5.i+70,'.',label='Granular RS',color='C1')
+    # plot(R6.t,R6.i+50,'c.',label='Granular FS')
+    # plot(R4.t,R4.i+20,'m.',label='IB cells')
+    # plot(R7.t,R7.i,'.',label='Deep SI',color='lime')
+    # xlim(0,runtime/second)
+    # ylim(0,220)
+    # legend(loc='upper left')
+    # xlabel('Time (s)')
+    # ylabel('Neuron index')
     
     figure()
     plot(R1.t,R1.i+140,'r.',label='RS cells')
@@ -846,6 +864,7 @@ if __name__=='__main__':
 #    all_thal=[0* msiemens * cm **-2]
     all_theta=['mixed']
     #all_theta=['mixed','mixed','mixed','mixed','mixed']
+    target_time=[500*ms]
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]
@@ -869,7 +888,7 @@ if __name__=='__main__':
     path="./sims/LFP_full_"+this_time.strftime("%y-%m-%d_%H-%M-%S")
     os.mkdir(path)
         
-    all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta))
+    all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta,target_time))
     index_var=[-1]
     
     all_sim=[list(all_sim[i])+[i] for i in range(len(all_sim))]

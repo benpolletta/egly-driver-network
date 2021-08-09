@@ -6,9 +6,9 @@ from brian2 import *
 defaultclock.dt = 0.01*ms
 
 eq_SI_LIP='''
-dV/dt=1/C_SI*(-J-Isyn-Igap-Iran-Iapp-IL-INa-IK-IAR) : volt
+dV/dt=1/C_SI*(-J-Isyn-Igap-Iran-Iapp-Iapp1-IL-INa-IK-IAR) : volt
 J : amp * meter ** -2
-Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
+Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+IsynVIP+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
 IsynRS_LIP_sup : amp * meter ** -2
 IsynFS_LIP_sup : amp * meter ** -2
 IsynSI_LIP_sup : amp * meter ** -2
@@ -16,6 +16,7 @@ IsynRS_LIP_gran : amp * meter ** -2
 IsynFS_LIP_gran : amp * meter ** -2
 IsynIB_LIP : amp * meter ** -2
 IsynSI_LIP_deep : amp * meter ** -2
+IsynVIP : amp * meter ** -2
 Isyn_FEF : amp * meter ** -2
 Isyn_mdPul : amp * meter ** -2
 Igap : amp * meter ** -2
@@ -36,10 +37,13 @@ IAR=gAR_SI*mAR*(V-VAR_SI) : amp * meter ** -2
     
 Iran=sig_ranSI*randn(): amp * meter ** -2 (constant over dt)
 
-Iapp=sinp*ginp_SI*(V-Vrev_inp) : amp * meter ** -2
+Iapp=sinp_SI(t)*ginp_SI*(V-VK_SI) : amp * meter ** -2
+    ginp_SI : siemens * meter **-2
+
+Iapp1=sinp*ginp_SI1*(V-Vrev_inp) : amp * meter ** -2
     dsinp/dt=-sinp/taudinp2 + (1-sinp)/taurinp2*0.5*(1+tanh(Vinp/10/mV)) : 1
     dVinp/dt=1/tauinp2*(Vlow-Vinp) : volt
-    ginp_SI : siemens * meter **-2
+    ginp_SI1 : siemens * meter **-2
 '''
 
 
@@ -73,7 +77,9 @@ if __name__=='__main__' :
     Vhigh=0*mV
     Vlow=-80*mV
     ginp_IB=0* msiemens * cm **-2
-    ginp=0* msiemens * cm **-2
+    ginp_SI=20* msiemens * cm **-2
+    
+    sinp_SI=TimedArray([0,1,0], dt=667*ms)
     
     SI=NeuronGroup(1,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     SI.V = '-100*mvolt+10*rand()*mvolt'
@@ -81,8 +87,10 @@ if __name__=='__main__' :
     SI.m = '0+0.05*rand()'
     SI.mAR = '0.02+0.04*rand()'
     SI.J='-20 * uA * cmeter ** -2'
+    SI.ginp_SI='20 * msiemens * cm ** -2'
     
     V1=StateMonitor(SI,'V',record=[0])
+    Inp=StateMonitor(SI,'Iapp',record=[0])
     
 #    I1=StateMonitor(SI,'IL',record=[0])
 #    I2=StateMonitor(SI,'INa',record=[0])
@@ -91,10 +99,16 @@ if __name__=='__main__' :
     run(1*second)
     
     figure()
+    subplot(211)
     plot(V1.t/second,V1.V[0]/volt)
     xlabel('Time (s)')
     ylabel('Membrane potential (V)')
     title('SI cell')
+    subplot(212)
+    plot(Inp.t/second,Inp.Iapp[0]/volt)
+    xlabel('Time (s)')
+    ylabel('Input Current')
+    
     
 #    figure()
 #    plot(I1.t/second,I1.IL[0],label='L')

@@ -25,6 +25,12 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
 
     N_RS,N_FS,N_SI,N_IB= Nf*80,Nf*20,Nf*20,Nf*20 #Number of neurons of RE, TC, and HTC type
     
+    # target_time=500*ms
+    # timeslots=zeros((int(around(runtime*10/second)),1))
+    # target_time = target_time/(100*ms)
+    # timeslots[int(around(target_time))]=1
+    # sinp_SI=TimedArray(timeslots, dt=100*ms)
+    
     
     all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(kainate,version,Nf)
     RS, FS, SI=all_neurons
@@ -210,6 +216,12 @@ if __name__=='__main__' :
     NN=1 #multiplicative factor on the number of neurons
     N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
     
+    # target_time=500*ms
+    # timeslots=zeros((int(around(runtime*10/second)),1))
+    # target_time = target_time/(100*ms)
+    # timeslots[int(around(target_time))]=1
+    # sinp_SI=TimedArray(array(timeslots), dt=100*ms)
+    
     net = Network()
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
@@ -228,8 +240,15 @@ if __name__=='__main__' :
     Vhigh=0*mV
     Vlow=-80*mV
     ginp_IB=0* msiemens * cm **-2
-    ginp_SI=0* msiemens * cm **-2
+    ginp_SI=10* msiemens * cm **-2
     ginp=0* msiemens * cm **-2
+    
+    target_time=500*ms
+    timeslots=zeros((int(around(runtime*10/second)),))
+    target_index = int(around(target_time/(100*ms)))
+    timeslots[target_index]=1
+    sinp_SI=TimedArray(array(timeslots), dt=100*ms)
+    #sinp_SI=TimedArray([0, 1, 0], dt=666*ms)
     
     def generate_spike_timing(N,f,start_time,end_time=runtime):
         list_time_and_i=[]
