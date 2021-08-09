@@ -146,6 +146,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     SI_deep.h = '0+0.05*rand()'
     SI_deep.m = '0+0.05*rand()'
     SI_deep.mAR = '0.02+0.04*rand()'
+    SI_deep.ginp_SI = '0*msiemens*cm**-2'
     if version == 'Alex':
         if kainate=='low':
             SI_deep.J='35* uA * cmeter ** -2' #article SI=50, code=35, Mark = 45
@@ -159,7 +160,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     
     if theta_phase=='good' or theta_phase=='mixed':
 #        SI_deep.ginp_SI=50* msiemens * cm **-2
-        SI_deep.ginp_SI=5* msiemens * cm **-2
+        SI_deep.ginp_SI1=5* msiemens * cm **-2
 #        SI_deep.ginp_SI=0* msiemens * cm **-2
     Vlow=-80*mV
     SI_deep.Vinp=Vlow
