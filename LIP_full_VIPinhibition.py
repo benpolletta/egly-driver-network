@@ -15,6 +15,7 @@ from scipy import signal
 from cells.RS_LIP import *
 from cells.FS_LIP import *
 from cells.SI_LIP import *
+from cells.SI_LIP_deep import *
 from cells.IB_soma_LIP import *
 from cells.IB_axon_LIP import *
 from cells.IB_apical_dendrite_LIP import *
@@ -71,14 +72,17 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     runtime=3*second
     kainate='low'
     
-    timeslots=zeros((int(around(runtime*10/second)),1))
-    target_time = target_time/(100*ms)
-    timeslots[int(around(target_time))]=1
-    sinp_SI=TimedArray(timeslots, dt=100*ms)
+    slot_duration = 200*ms
+    timeslots=zeros((int(around(runtime/slot_duration)),1))
+    target_index = int(around(target_time/slot_duration))
+    timeslots[target_index]=1
+    sinp_SI=TimedArray(timeslots, dt=slot_duration)
     
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
     RS, FS, SI, IB_soma,IB_axon,IB_bd,IB_ad =all_neurons
+    
+    SI.ginp_SI=10* msiemens * cm **-2
    
     if theta_phase=='bad':
         input_beta2_IB=False
@@ -86,7 +90,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
         input_beta2_FS_SI=True
         input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
-        SI.ginp_SI=0* msiemens * cm **-2
+        SI.ginp_SI1=0* msiemens * cm **-2
         thal_cond=2* msiemens * cm **-2
         input_mixed=False
         
@@ -141,12 +145,12 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     elif kainate=='high':
         FS_gran.J='16 * uA * cmeter ** -2'
     
-    SI_deep=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='SIdeepLIP')
+    SI_deep=NeuronGroup(N_SI,eq_SI_LIP_deep,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='SIdeepLIP')
     SI_deep.V = '-100*mvolt+10*rand()*mvolt'
     SI_deep.h = '0+0.05*rand()'
     SI_deep.m = '0+0.05*rand()'
     SI_deep.mAR = '0.02+0.04*rand()'
-    SI_deep.ginp_SI = '0*msiemens*cm**-2'
+    #SI_deep.ginp_SI = '0*msiemens*cm**-2'
     if version == 'Alex':
         if kainate=='low':
             SI_deep.J='35* uA * cmeter ** -2' #article SI=50, code=35, Mark = 45
@@ -160,7 +164,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     
     if theta_phase=='good' or theta_phase=='mixed':
 #        SI_deep.ginp_SI=50* msiemens * cm **-2
-        SI_deep.ginp_SI1=5* msiemens * cm **-2
+        SI_deep.ginp_SI=5* msiemens * cm **-2
 #        SI_deep.ginp_SI=0* msiemens * cm **-2
     Vlow=-80*mV
     SI_deep.Vinp=Vlow
@@ -494,11 +498,11 @@ def run_one_simulation(simu,path,index_var):
     
     net = Network(collect())
     
-    target_time=500*ms
-    timeslots=zeros((int(around(runtime*10/second)),))
-    target_index = int(around(target_time/(100*ms)))
-    timeslots[target_index]=1
-    sinp_SI=TimedArray(array(timeslots), dt=100*ms)
+    # target_time=500*ms
+    # timeslots=zeros((int(around(runtime*10/second)),))
+    # target_index = int(around(target_time/(100*ms)))
+    # timeslots[target_index]=1
+    # sinp_SI=TimedArray(array(timeslots), dt=100*ms)
     
     print('Network setup')
     all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase,target_time)
@@ -863,7 +867,7 @@ if __name__=='__main__':
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
     all_thal=[10* msiemens * cm **-2]
 #    all_thal=[0* msiemens * cm **-2]
-    all_theta=['mixed']
+    all_theta=['bad']
     #all_theta=['mixed','mixed','mixed','mixed','mixed']
     target_time=[500*ms]
     
@@ -886,7 +890,7 @@ if __name__=='__main__':
     all_J=list(product(all_J_RSg,all_J_FSg))
     
     this_time=datetime.datetime.now()
-    path="./sims/LFP_full_"+this_time.strftime("%y-%m-%d_%H-%M-%S")
+    path="./sims/LIP_full_"+this_time.strftime("%y-%m-%d_%H-%M-%S")
     os.mkdir(path)
         
     all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta,target_time))

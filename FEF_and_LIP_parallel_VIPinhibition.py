@@ -96,10 +96,11 @@ def FEF_and_LIP(simu,path):
     syn_cond=all_syn_cond[0]
     J=all_J[0]
     
-    timeslots=zeros((int(around(runtime*10/second)),))
-    target_index = int(around(target_time/(100*ms)))
+    slot_duration = 100*ms
+    timeslots=zeros((int(around(runtime/slot_duration)),1))
+    target_index = int(around(target_time/slot_duration))
     timeslots[target_index]=1
-    sinp_SI=TimedArray(array(timeslots), dt=100*ms)
+    sinp_SI=TimedArray(timeslots, dt=slot_duration)
     
     if theta_phase=='bad':
         input_beta2_IB=False
@@ -144,7 +145,7 @@ def FEF_and_LIP(simu,path):
     
     all_neurons_LIP, all_synapses_LIP, all_gap_junctions_LIP, all_monitors_LIP=make_full_network(syn_cond,J,thal,theta_phase)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors_LIP
-    RS_sup_LIP,SI_sup_LIP,IB_LIP,SI_deep_LIP=all_neurons_LIP[0],all_neurons[2],all_neurons_LIP[5],all_neurons_LIP[9]
+    RS_sup_LIP,SI_sup_LIP,IB_LIP,SI_deep_LIP=all_neurons_LIP[0],all_neurons_LIP[2],all_neurons_LIP[5],all_neurons_LIP[9]
     RS_gran_LIP,FS_gran_LIP=all_neurons_LIP[7],all_neurons_LIP[8]
     
     IB_LIP.ginp_IB=0* msiemens * cm **-2 #the input to RS_sup_LIP is provided with synapses from FEF 

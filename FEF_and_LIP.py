@@ -13,7 +13,7 @@ from brian2 import *
 from scipy import signal
 
 from FEF_full3 import *
-from LIP_full import *
+from LIP_full_VIPinhibition import *
 
 from itertools import *
 
@@ -40,7 +40,7 @@ def generate_syn(source,target,syntype,connection_pattern,g_i,taur_i,taud_i,V_i)
     return S
 
 if __name__=='__main__':
-    theta_phase='mixed'
+    theta_phase='bad'
     target_on=True  
 #    target_on=False 
     target_time = 500*msecond
@@ -88,6 +88,12 @@ if __name__=='__main__':
     syn_cond=all_syn_cond[0]
     J=all_J[0]
     
+    slot_duration = 100*ms
+    timeslots=zeros((int(around(runtime/slot_duration)),1))
+    target_index = int(around(target_time/slot_duration))
+    timeslots[target_index]=1
+    sinp_SI=TimedArray(timeslots, dt=slot_duration)
+    
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
@@ -129,12 +135,13 @@ if __name__=='__main__':
     R8,R9,R10,V_RS,V_FS,V_SI,R11,R12,R13,R14,mon_RS=all_monitors_FEF
     RSvm_FEF,SIvm_FEF,RSv_FEF,SIv_FEF,VIPv_FEF=all_neurons_FEF[1],all_neurons_FEF[2],all_neurons_FEF[6],all_neurons_FEF[9],all_neurons_FEF[8]
     
-    all_neurons_LIP, all_synapses_LIP, all_gap_junctions_LIP, all_monitors_LIP=make_full_network(syn_cond,J,thal,theta_phase)
+    all_neurons_LIP, all_synapses_LIP, all_gap_junctions_LIP, all_monitors_LIP=make_full_network(syn_cond,J,thal,theta_phase,target_time)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors_LIP
-    RS_sup_LIP,IB_LIP,SI_deep_LIP=all_neurons_LIP[0],all_neurons_LIP[5],all_neurons_LIP[9]
+    RS_sup_LIP,SI_sup_LIP,IB_LIP,SI_deep_LIP=all_neurons_LIP[0],all_neurons_LIP[2],all_neurons_LIP[5],all_neurons_LIP[9]
     RS_gran_LIP,FS_gran_LIP=all_neurons_LIP[7],all_neurons_LIP[8]
     
     IB_LIP.ginp_IB=0* msiemens * cm **-2 #the input to RS_sup_LIP is provided with synapses from FEF 
+    SI_sup_LIP.ginp_SI=10* msiemens * cm **-2
     SI_deep_LIP.ginp_SI=0* msiemens * cm **-2
     RSvm_FEF.ginp_RS=0* msiemens * cm **-2
     SIvm_FEF.ginp_SI=0* msiemens * cm **-2
@@ -229,85 +236,131 @@ if __name__=='__main__':
     LFP_LIP=1/80*sum(V1.V,axis=0)[min_t:]
     LFP_FEF=1/20*sum(V_RS.V,axis=0)[min_t:]
     
-    record_dt=1/512*second
+    record_dt=1/10000*second
     t=int(0.3*second/record_dt) #t_debut
     L=int(2*second/record_dt)
     fs = 1/record_dt
-    freq = linspace(1/second, fs/2, 100)
-    widths = 6*fs/(2*freq*pi)
+    freq = linspace(1/second, 100/second, 100)
+    widths = 6*fs/freq#linspace(4,16,100)*fs/freq #(2*freq*pi)#6*fs/(2*freq*pi)
             
+    def flipEnds(mat, end_length):
+        beginning = mat[0:end_length, :]
+        ending = mat[-end_length-1:-1, :]
+        flipped = vstack((flipud(beginning), mat, flipud(ending)))
+        return flipped
+    
+    end_length = 50000
+    LFPflip_LIP = flipEnds(LFP_LIP[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
+    LFPflip_FEF = flipEnds(LFP_FEF[:, None], end_length)
+    
+    def pctMean(mat, ax):
+        diagMean = diag(nanmean(mat, axis=ax))
+        matMean = ones(shape(mat))
+        if ax == 0:
+            matMean = matmul(ones(shape(mat)), diagMean)
+        else:
+            matMean = matmul(diagMean, ones(shape(mat)))
+        normed = 100*(mat - matMean)/matMean
+        return normed
+    
+    CWT = signal.cwt(squeeze(LFPflip_LIP), signal.morlet2, widths, w=6)
+    CWT = CWT[:, end_length:-end_length]
+    CWTpct = pctMean(absolute(CWT), 1)
+    
+    CWT = signal.cwt(squeeze(LFPflip_FEF), signal.morlet2, widths, w=6)
+    CWT = CWT[:, end_length:-end_length]
+    CWTpct = pctMean(absolute(CWT), 1)
     
     figure()
-    subplot(121)
-    CWT = signal.cwt(LFP_LIP, signal.morlet2, widths, w=6)
+    subplot(211)
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V1.t[min_t:], freq, CWT, cmap='RdBu')#, shading='gouraud')
+    pcolormesh(V1.t[min_t:], freq, CWTpct)#, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0,50)
+    colorbar()
     
-    subplot(122)
-    CWT = signal.cwt(LFP_FEF, signal.morlet2, widths, w=6)
+    subplot(212)
+    CWT = signal.cwt(LFP_FEF, signal.morlet2, widths)#, w=6)
     #f, t, Sxx = signal.spectrogram(LFP_FEF, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V_RS.t[min_t:], freq, CWT, cmap='RdBu')#, shading='gouraud')
+    pcolormesh(V_RS.t[min_t:], freq, CWTpct)#, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0,50)
+    colorbar()
+    
+    figure()
+    subplot(211)
+    #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V1.t[min_t:], freq, absolute(CWT))#, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0,50)
+    colorbar()
+    
+    subplot(212)
+    CWT = signal.cwt(LFP_FEF, signal.morlet2, widths)#, w=6)
+    #f, t, Sxx = signal.spectrogram(LFP_FEF, 100000*Hz,nperseg=30000,noverlap=25000)
+    pcolormesh(V_RS.t[min_t:], freq, absolute(CWT))#, cmap='RdBu')#, shading='gouraud')
+    ylabel('Frequency [Hz]')
+    xlabel('Time [sec]')
+    ylim(0,50)
+    colorbar()
 #    
-#    f,Spectrum_LFP_LIP=signal.periodogram(LFP_LIP, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_FEF=signal.periodogram(LFP_FEF, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_V_SI=signal.periodogram(LFP_V_SI, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_V_IB=signal.periodogram(LFP_V_IB, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_V_RSg=signal.periodogram(LFP_V_RSg, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_V_FSg=signal.periodogram(LFP_V_FSg, 100000,'flattop', scaling='spectrum')
-#    f,Spectrum_LFP_V_SId=signal.periodogram(LFP_V_SId, 100000,'flattop', scaling='spectrum')
-#    
-#    figure(figsize=(10,8))    
-#    subplot(421)
-#    plot(f,Spectrum_LFP_V_RS)
-#    ylabel('Spectrum')
-#    yticks([],[])
-#    xlim(0,100)
-#    title('RS cell')
-#    subplot(422)
-#    plot(f,Spectrum_LFP_V_FS)
-#    yticks([],[])
-#    xlim(0,100)
-#    title('FS cell')
-#    subplot(423)
-#    plot(f,Spectrum_LFP_V_SI)
-#    ylabel('Spectrum')
-#    yticks([],[])
-#    xlim(0,100)
-#    title('SI cell')
-#    subplot(425)
-#    plot(f,Spectrum_LFP_V_RSg)
-#    ylabel('Spectrum')
-#    yticks([],[])
-#    xlim(0,100)
-#    title('gran RS cell')
-#    subplot(426)
-#    plot(f,Spectrum_LFP_V_FSg)
-#    yticks([],[])
-#    xlim(0,100)
-#    title('gran FS cell')
-#    subplot(427)
-#    plot(f,Spectrum_LFP_V_IB)
-#    xlabel('Frequency (Hz)')
-#    ylabel('Spectrum')
-#    yticks([],[])
-#    xlim(0,100)
-#    title('IB cell')
-#    subplot(428)
-#    plot(f,Spectrum_LFP_V_SId)
-#    yticks([],[])
-#    xlim(0,100)
-#    xlabel('Frequency (Hz)')
-#    title('deep SI cell')
-#    
-#    tight_layout()
-#    
+    f,Spectrum_LFP_LIP=signal.periodogram(LFP_LIP, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_FEF=signal.periodogram(LFP_FEF, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_SI=signal.periodogram(LFP_V_SI, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_IB=signal.periodogram(LFP_V_IB, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_RSg=signal.periodogram(LFP_V_RSg, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_FSg=signal.periodogram(LFP_V_FSg, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_SId=signal.periodogram(LFP_V_SId, 100000,'flattop', scaling='spectrum')
+    
+    figure(figsize=(10,8))    
+    subplot(421)
+    plot(f,Spectrum_LFP_V_RS)
+    ylabel('Spectrum')
+    yticks([],[])
+    xlim(0,100)
+    title('RS cell')
+    subplot(422)
+    plot(f,Spectrum_LFP_V_FS)
+    yticks([],[])
+    xlim(0,100)
+    title('FS cell')
+    subplot(423)
+    plot(f,Spectrum_LFP_V_SI)
+    ylabel('Spectrum')
+    yticks([],[])
+    xlim(0,100)
+    title('SI cell')
+    subplot(425)
+    plot(f,Spectrum_LFP_V_RSg)
+    ylabel('Spectrum')
+    yticks([],[])
+    xlim(0,100)
+    title('gran RS cell')
+    subplot(426)
+    plot(f,Spectrum_LFP_V_FSg)
+    yticks([],[])
+    xlim(0,100)
+    title('gran FS cell')
+    subplot(427)
+    plot(f,Spectrum_LFP_V_IB)
+    xlabel('Frequency (Hz)')
+    ylabel('Spectrum')
+    yticks([],[])
+    xlim(0,100)
+    title('IB cell')
+    subplot(428)
+    plot(f,Spectrum_LFP_V_SId)
+    yticks([],[])
+    xlim(0,100)
+    xlabel('Frequency (Hz)')
+    title('deep SI cell')
+    
+    tight_layout()
+    
     
     
     #FEF Plots    
