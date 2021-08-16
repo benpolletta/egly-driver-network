@@ -89,10 +89,10 @@ if __name__=='__main__':
     J=all_J[0]
     
     slot_duration = 100*ms
-    timeslots=zeros((int(around(runtime/slot_duration)),1))
+    timeslots=zeros((int(around(runtime/slot_duration)),))
     target_index = int(around(target_time/slot_duration))
     timeslots[target_index]=1
-    sinp_SI=TimedArray(timeslots, dt=slot_duration)
+    sinp_SI=TimedArray(array(timeslots), dt=slot_duration)
     
     if theta_phase=='bad':
         input_beta2_IB=False

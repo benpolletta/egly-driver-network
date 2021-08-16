@@ -96,6 +96,12 @@ def FEF_and_LIP(simu,path):
     syn_cond=all_syn_cond[0]
     J=all_J[0]
     
+    slot_duration = 100*ms
+    timeslots=zeros((int(around(runtime/slot_duration)),))
+    target_index = int(around(target_time/slot_duration))
+    timeslots[target_index]=1
+    sinp_SI=TimedArray(array(timeslots), dt=slot_duration)
+    
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
@@ -139,10 +145,11 @@ def FEF_and_LIP(simu,path):
     
     all_neurons_LIP, all_synapses_LIP, all_gap_junctions_LIP, all_monitors_LIP=make_full_network(syn_cond,J,thal,theta_phase)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors_LIP
-    RS_sup_LIP,IB_LIP,SI_deep_LIP=all_neurons_LIP[0],all_neurons_LIP[5],all_neurons_LIP[9]
+    RS_sup_LIP,SI_sup_LIP,IB_LIP,SI_deep_LIP=all_neurons_LIP[0],all_neurons_LIP[2],all_neurons_LIP[5],all_neurons_LIP[9]
     RS_gran_LIP,FS_gran_LIP=all_neurons_LIP[7],all_neurons_LIP[8]
     
     IB_LIP.ginp_IB=0* msiemens * cm **-2 #the input to RS_sup_LIP is provided with synapses from FEF 
+    SI_sup_LIP.ginp_SI=10* msiemens * cm **-2
     SI_deep_LIP.ginp_SI=0* msiemens * cm **-2
 #    RSvm_FEF.ginp_RS=0* msiemens * cm **-2
     SIvm_FEF.ginp_SI=0* msiemens * cm **-2
@@ -223,7 +230,6 @@ def FEF_and_LIP(simu,path):
     save_raster('FEF RS m',mon_RS.i,mon_RS.t,new_path)
 
     
-    
  #   clear_cache('cython')
 
 
@@ -236,8 +242,8 @@ if __name__=='__main__':
     
     os.mkdir(path)
     
-    N=50
-    liste_target_time=[350*msecond,450*msecond,550*msecond,650*msecond,750*msecond,850*msecond,950*msecond,1050*msecond,1150*msecond,1250*msecond,1350*msecond,1450*msecond,1550*msecond,1650*msecond]
+    N=1#50
+    liste_target_time=[350*msecond]#[350*msecond,450*msecond,550*msecond,650*msecond,750*msecond,850*msecond,950*msecond,1050*msecond,1150*msecond,1250*msecond,1350*msecond,1450*msecond,1550*msecond,1650*msecond]
  
     liste_simus=[]
     for t in liste_target_time:
@@ -247,9 +253,9 @@ if __name__=='__main__':
     
     simus_pas_faites=list(range(700))
     
-    order=[50*i for i in range(len(liste_target_time))]
-    for ind in range(1,50):
-        order+=[50*i+ind for i in range(len(liste_target_time))]
+    order=[N*i for i in range(len(liste_target_time))]
+    for ind in range(1,N):
+        order+=[N*i+ind for i in range(len(liste_target_time))]
     
     liste_simus=[liste_simus[i] for i in order if i in simus_pas_faites]
 

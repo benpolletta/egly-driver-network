@@ -41,7 +41,7 @@ path=""
 if os.name == 'nt':
     path=os.path.join(ntpath.dirname(os.path.abspath(__file__)),"results_"+str(datetime.datetime.now()).replace(':','-'))
 else :
-    path="/project/crc-nak/aaussel/results_"+str(datetime.datetime.now())
+    path="/project/crc-nak/brpp/results_"+str(datetime.datetime.now()).replace(':','-')
 
 os.mkdir(path)
 

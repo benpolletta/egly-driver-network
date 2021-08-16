@@ -230,7 +230,6 @@ def FEF_and_LIP(simu,path):
     save_raster('FEF RS m',mon_RS.i,mon_RS.t,new_path)
 
     
-    
  #   clear_cache('cython')
 
 
