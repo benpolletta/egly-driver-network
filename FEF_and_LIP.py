@@ -17,6 +17,14 @@ from LIP_full_VIPinhibition import *
 
 from itertools import *
 
+import os
+import sys
+
+if sys.platform=='linux':
+    cache_dir=os.environ['TMPDIR']
+    prefs.codegen.runtime.cython.cache_dir = cache_dir
+    prefs.codegen.runtime.cython.multiprocess_safe = False
+
 
 
 def generate_syn(source,target,syntype,connection_pattern,g_i,taur_i,taud_i,V_i):

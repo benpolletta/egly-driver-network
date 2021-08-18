@@ -17,6 +17,14 @@ from itertools import *
 from joblib import Parallel, delayed
 import multiprocessing
 
+import os
+import sys
+
+if sys.platform=='linux':
+    cache_dir=os.environ['TMPDIR']
+    prefs.codegen.runtime.cython.cache_dir = cache_dir
+    prefs.codegen.runtime.cython.multiprocess_safe = False
+
 
 def save_raster(name,raster_i,raster_t,path):
     raster_file=open(path+'/raster_'+name+'_i.txt','w')

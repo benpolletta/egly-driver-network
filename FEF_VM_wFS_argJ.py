@@ -11,7 +11,7 @@ import sys
 
 
 if sys.platform=='linux':
-    cache_dir=os.env['TMPDIR']
+    cache_dir=os.environ['TMPDIR']
     prefs.codegen.runtime.cython.cache_dir = cache_dir
     prefs.codegen.runtime.cython.multiprocess_safe = False
 
