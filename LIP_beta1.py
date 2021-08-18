@@ -17,6 +17,14 @@ from cells.IB_basal_dendrite_LIP import *
 
 from LIP_superficial_layer import *
 
+import os
+import sys
+
+if sys.platform=='linux':
+    cache_dir=os.environ['TMPDIR']
+    prefs.codegen.runtime.cython.cache_dir = cache_dir
+    prefs.codegen.runtime.cython.multiprocess_safe = False
+
 def create_Mark_Alex_network(kainate,version,Nf=1):
 
     prefs.codegen.target = 'numpy'
@@ -33,7 +41,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     
     
     all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(kainate,version,Nf)
-    RS, FS, SI=all_neurons
+    RS, FS, SI, VIPinput=all_neurons
     #Single column network
     
     ##Define neuron groups 
@@ -212,6 +220,8 @@ if __name__=='__main__' :
     top_down_dishinibition=False #Figures 6c,d
     random_init_RS=False #All figures
     random_init_IB=False #All figures except 1e and 2g
+    taurinp2=0.1*ms
+    taudinp2=20*ms
     
     NN=1 #multiplicative factor on the number of neurons
     N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
@@ -224,7 +234,7 @@ if __name__=='__main__' :
     
     net = Network()
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
-    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
+    V1,V2,V3,R1,R2,R3,R4,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
 
     net.add(all_neurons)
     net.add(all_synapses)
@@ -243,11 +253,11 @@ if __name__=='__main__' :
     ginp_SI=10* msiemens * cm **-2
     ginp=0* msiemens * cm **-2
     
-    target_time=500*ms
-    timeslots=zeros((int(around(runtime*10/second)),))
-    target_index = int(around(target_time/(100*ms)))
-    timeslots[target_index]=1
-    sinp_SI=TimedArray(array(timeslots), dt=100*ms)
+    # target_time=500*ms
+    # timeslots=zeros((int(around(runtime*10/second)),))
+    # target_index = int(around(target_time/(100*ms)))
+    # timeslots[target_index]=1
+    # sinp_SI=TimedArray(array(timeslots), dt=100*ms)
     #sinp_SI=TimedArray([0, 1, 0], dt=666*ms)
     
     def generate_spike_timing(N,f,start_time,end_time=runtime):

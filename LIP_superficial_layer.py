@@ -66,8 +66,14 @@ def create_superficial_layer(kainate,version,Nf=1):
             SI.J='45* uA * cmeter ** -2' #article SI=50, code=35, Mark = 45
         elif kainate=='high':
             SI.J='40* uA * cmeter ** -2' #article SI=50, code=35, Mark = 45
+            
+    VIP_timing=generate_spike_timing(N_SI,50*Hz,500*ms,600*ms)
+    VIPinput = SpikeGeneratorGroup(N_SI, VIP_timing[:,1], VIP_timing[:,0]*second)
+    S_VIPSI = Synapses(VIPinput,SI,on_pre='Vinp=Vhigh')
+    S_VIPSI.connect(j='i')
+    #taurinp2='0.2*ms'
+    #taudinp2='20*ms'
 
-    
     ##Synapses
     eq_syn='''_post=s_i*g_i*(V_post-V_i) : amp * meter ** -2 (summed)
         ds_i/dt=-s_i/taud_i+(1-s_i)/taur_i*0.5*(1+tanh(V_pre/10/mV)) : 1
@@ -174,17 +180,18 @@ def create_superficial_layer(kainate,version,Nf=1):
     R1=SpikeMonitor(RS,record=True)
     R2=SpikeMonitor(FS,record=True)
     R3=SpikeMonitor(SI,record=True)
+    R4=SpikeMonitor(VIPinput,record=True)
     
     I1=StateMonitor(RS,'Isyn',record=True)
     I2=StateMonitor(FS,'Isyn',record=True)
     I3=StateMonitor(SI,'Isyn',record=True)
     
-    all_neurons=RS, FS, SI
-    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI
+    all_neurons=RS, FS, SI, VIPinput
+    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI, S_VIPSI
     all_synapses=tuple([y for y in all_synapses if y])
     all_gap_junctions=gap_SISI, gap_RSRS
     all_gap_junctions=tuple([y for y in all_gap_junctions if y])
-    all_monitors=V1,V2,V3,R1,R2,R3,I1,I2,I3
+    all_monitors=V1,V2,V3,R1,R2,R3,R4,I1,I2,I3
 
     return all_neurons,all_synapses,all_gap_junctions,all_monitors    
 
@@ -207,12 +214,14 @@ if __name__=='__main__' :
     
     input_beta=False
         
-    sinp_SI=TimedArray([0,1,0], dt=667*ms)
+    #sinp_SI=TimedArray([0,1,0], dt=667*ms)
     
     Vrev_inp=0*mV
     taurinp=0.1*ms
     taudinp=0.5*ms
     tauinp=taudinp
+    taurinp2=0.1*ms
+    taudinp2=10*ms
     Vhigh=0*mV
     Vlow=-80*mV
     ginp_IB=0* msiemens * cm **-2
@@ -230,7 +239,7 @@ if __name__=='__main__' :
     net.add(all_gap_junctions)
     net.add(all_monitors)
     
-    V1,V2,V3,R1,R2,R3,I1,I2,I3=all_monitors
+    V1,V2,V3,R1,R2,R3,R4,I1,I2,I3=all_monitors
     
     prefs.codegen.target = 'cython'  #cython=faster, numpy = default python
 
@@ -269,9 +278,10 @@ if __name__=='__main__' :
     #title('SI cell')
     
     figure()
-    plot(R1.t,R1.i+40,'r.',label='RS cells')
-    plot(R2.t,R2.i+20,'b.',label='FS cells')
-    plot(R3.t,R3.i,'g.',label='SI cells')
+    plot(R1.t,R1.i+60,'r.',label='RS cells')
+    plot(R2.t,R2.i+40,'b.',label='FS cells')
+    plot(R3.t,R3.i+20,'g.',label='SI cells')
+    plot(R4.t,R4.i,'k.',label='VIP input')
     xlim(0,runtime/second)
     legend(loc='upper left')
     
