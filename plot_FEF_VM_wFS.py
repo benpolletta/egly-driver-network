@@ -2,7 +2,7 @@
 """
 Created on Wed Jun  3 14:40:22 2020
 
-@author: ameli
+@author: amelie, ben
 """
 
 from brian2 import *
@@ -33,6 +33,36 @@ def read_raster_times_and_indexes(file_t,file_i):
     raster_i.close()
     return array(all_times),array(all_i) 
 
+def read_voltage(file_t,file_v):
+    all_times=[]
+    raster_t=open(file_t,'r')
+    for line in raster_t:
+        time_str=line.split(',')[:-1]
+    for line in time_str:
+        if line[-2]=='m':
+            time=float(line[:-2])*msecond
+        elif line[-2]=='u':
+            time=float(line[:-2])*usecond
+        else :
+            time=float(line[:-1])*second
+        all_times.append(time)
+    raster_t.close()
+        
+    all_v=[]
+    raster_v=open(file_v,'r')
+    for line in raster_v:
+        v_str=line.split(',')[:-1]
+    for line in v_str:
+        if line[-2]=='u':
+            v=float(line[:-2])*uvolt
+        if line[-2]=='m':
+            v=float(line[:-2])*mvolt
+        else:
+            v=float(line[:-2])*volt
+        all_v.append(v)
+    raster_v.close()
+    return array(all_times),array(all_v) 
+
 def spike_train_from_raster(ras_t,runtime):
     record_dt=1/100000*second
     tvec=arange(0,runtime*second,record_dt)
@@ -50,18 +80,22 @@ def get_one_raster(group_name):
     return ras
 
 def get_raster_Jgg(J,gFS,gVS):
-    base="sims/FEF_VM_wFS_J"+str(J)+"_gFS"+str(gFS)+"_gVS"+str(gVS)+"/raster_"
+    base="sims/FEF_VM_wFS_J"+str(J)+"_gFS"+str(gFS)+"_gVS"+str(gVS)
     all_names=["RS","FS","SI","VIP"]
     all_N=[20,20,20,20]
     
-    all_raster=[0]*len(all_names)
+    all_raster=[0]*(len(all_names)+1)
     
     for i in range(len(all_names)):
-        r=get_one_raster(base+all_names[i])
+        r=get_one_raster(base+'/raster_'+all_names[i])
         all_raster[i]=r
+
+    v_t, v_i = read_voltage(base+"/V_RS_time.txt", base+"/V_RS_V.txt")   
+    v = concatenate((v_t[:, None], v_i.reshape(200000, 20)), axis=1)     
+    all_raster[-1] = v
     return all_raster
     
-J=5
+J=14
 
 runtime=2*second
 
@@ -81,10 +115,13 @@ t=int(0.3*second/record_dt) #t_debut
 L=int(2*second/record_dt)
 
 fig = figure(figsize=(12,12))
-    
-outer = gridspec.GridSpec(8, 8, wspace=0.01)
 
-for pset in arange(0, len(params), 2):
+spacing = 3
+rows = 8
+columns = 5
+outer = gridspec.GridSpec(rows, columns, wspace=0.01)
+
+for pset in arange(0, len(params)-1, spacing):
     
     pset_dir="sims/FEF_VM_wFS_J"+str(J)+"_gFS"+str(params[pset][0])+"_gVS"+str(params[pset][1])
     
@@ -92,7 +129,9 @@ for pset in arange(0, len(params), 2):
         
         all_raster=get_raster_Jgg(J,params[pset][0],params[pset][1])
         
-        spiketrain, tvec=spike_train_from_raster(all_raster[0][0], 2)
+        #spiketrain, tvec=spike_train_from_raster(all_raster[0][0], 2)
+        time = all_raster[-1][0]
+        LFP = nanmean(all_raster[-1][1:], axis=1)
         
         record_dt=1/100000*second#1/512*second
         t=int(0.3*second/record_dt) #t_debut
@@ -107,7 +146,7 @@ for pset in arange(0, len(params), 2):
             return flipped
         
         end_length = 5000
-        STflip = flipEnds(spiketrain[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
+        LFPflip = flipEnds(LFP[:, None], end_length)#transpose(atleast_2d(LFP_V_RS)), end_length)
         
         def pctMean(mat, ax):
             diagMean = diag(nanmean(mat, axis=ax))
@@ -119,7 +158,7 @@ for pset in arange(0, len(params), 2):
             normed = (mat - matMean)/matMean
             return normed
         
-        f, t, Sxx = signal.spectrogram(squeeze(STflip), fs, nperseg=25000, noverlap=20000)
+        f, t, Sxx = signal.spectrogram(squeeze(LFPflip), fs, nperseg=25000, noverlap=20000)
         pctSxx = pctMean(Sxx, 1)
         
         #freq = logspace(0, 2, 50)*Hz
@@ -127,13 +166,13 @@ for pset in arange(0, len(params), 2):
         #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
         widths = linspace(3, 30, 100)*fs/(2*freq*pi)
         
-        CWT = signal.cwt(squeeze(STflip), signal.morlet2, widths)
+        CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths)
         CWT = CWT[:, end_length:-end_length]
         CWTpct = pctMean(CWT, 1)
         
         #subplot(outer[pset])#floor(pset/11), rem(pset,11)])
         
-        inner = outer[int(floor(pset/2))].subgridspec(2,1)#gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=outer[floor(pset/2)])#floor(pset/11),rem(pset,11)])
+        inner = outer[int(floor(pset/spacing))].subgridspec(2,1)#gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=outer[floor(pset/2)])#floor(pset/11),rem(pset,11)])
     
         fig.add_subplot(inner[0])#outer[floor(pset/11),rem(pset,11)])
         ax = gca()#subplot(inner[0])
