@@ -10,7 +10,7 @@ print('Starting')
 
 import os
 
-os.system('cd ~/models/model_FEF_LIP')
+os.system('cd /projectnb/crc-nak/brpp/Full_model_04_06')
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -18,15 +18,21 @@ import time
 #matplotlib.use('agg')
 plt.switch_backend('agg')
 import sys
-sys.path.insert(0, '~/models/model_FEF_LIP')
+sys.path.insert(0, '/projectnb/crc-nak/brpp/Full_model_04_06')
 
 from brian2 import *
 
 from joblib import Parallel, delayed
 import multiprocessing
 import os
+import sys
 
 from FEF_and_LIP_parallel import *
+
+if sys.platform=='linux':
+    cache_dir=os.environ['TMPDIR']
+    prefs.codegen.runtime.cython.cache_dir = cache_dir
+    prefs.codegen.runtime.cython.multiprocess_safe = False
 
 os.environ['MKL_NUM_THREADS'] = '1'
 os.environ['OMP_NUM_THREADS'] = '1'
