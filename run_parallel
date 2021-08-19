@@ -1,0 +1,14 @@
+#!/bin/bash -l
+
+##$ -l mem_total=384G
+#$ -pe omp 24
+
+echo "Executing parallel.py '$1'."
+
+module load miniconda/4.9.2
+
+conda activate brienv
+
+cd /projectnb/crc-nak/brpp/Full_model_04_06/
+
+python parallel.py 24
