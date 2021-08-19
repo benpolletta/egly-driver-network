@@ -24,10 +24,9 @@ from brian2 import *
 
 from joblib import Parallel, delayed
 import multiprocessing
-import os
 import sys
 
-from FEF_and_LIP_parallel import *
+from FEF_and_LIP_VIPgamma_parallel import *
 
 if sys.platform=='linux':
     cache_dir=os.environ['TMPDIR']
@@ -64,10 +63,10 @@ liste_simus=[[liste_simus[i],i] for i in range(len(liste_simus))]
 print('Number of simulations: '+str(len(liste_simus)))
 
 #setting the number of cores to used (all cpus by default)
-num_cores = multiprocessing.cpu_count()
+num_cores = sys.arvg[1]#multiprocessing.cpu_count()
 if os.name == 'nt':
     num_cores=-3 #using all cpus on a windows does not work for an unknown reason
 
 Parallel(n_jobs=num_cores)(delayed(FEF_and_LIP)(simu,path) for simu in liste_simus)
 
-clear_cache('cython')
+#clear_cache('cython')
