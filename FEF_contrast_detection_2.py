@@ -75,7 +75,8 @@ def generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on):
     VIP=NeuronGroup(N_FS,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-90*mvolt+10*rand()*mvolt'
 #    VIP.Iapp='5 * uA * cmeter ** -2' #article=code=35   
-    VIP.Iapp='5 * uA * cmeter ** -2' #article=code=35  
+    VIP.Iapp='5 * uA * cmeter ** -2' #article=code=35 
+#    VIP.Iapp='4.5 * uA * cmeter ** -2' #article=code=35 
 
     ##Synapses
     eq_syn='''_post=s_i*g_i*(V_post-V_i) : amp * meter ** -2 (summed)
@@ -211,6 +212,13 @@ if __name__=='__main__':
     Vlow=-80*mV
     ginp=0* msiemens * cm **-2
     
+    taurinp2=0.1*ms
+    taudinp2=0.5*ms
+    tauinp2=taudinp2
+    taurinp3=0.1*ms
+    taudinp3=0.5*ms
+    tauinp3=taudinp3
+    
     N_FS,N_RS=20,20
     all_neurons,all_synapses,all_monitors=generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on)    
     
@@ -239,10 +247,12 @@ if __name__=='__main__':
     plot(R6.t,R6.i+20,'b.',label='FS')
     plot(R7.t,R7.i+40,'k.',label='VIP')
     plot(R8.t,R8.i+60,'g.',label='SI')
-    xlim(0,runtime/second)
+    xlim(0.2,runtime/second)
     legend(loc='upper left')
-    xlabel('Time (s)')
-    ylabel('Neuron index')
+    xlabel('Time (s)',fontsize=12)
+    ylabel('Neuron index',fontsize=12)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
     
 #    figure()
 #    plot(M.t,M.Iinp1[0])

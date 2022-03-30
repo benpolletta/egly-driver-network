@@ -157,7 +157,7 @@ if __name__=='__main__':
     defaultclock.dt = 0.01*ms
     
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5
-    theta_phase='good' #'good' or 'bad' or 'mixed'
+    theta_phase='bad' #'good' or 'bad' or 'mixed'
     runtime=1*second
     target_on=True
     
@@ -168,6 +168,13 @@ if __name__=='__main__':
     Vhigh=0*mV
     Vlow=-80*mV
     ginp=0* msiemens * cm **-2
+    
+    taurinp2=0.1*ms
+    taudinp2=0.5*ms
+    tauinp2=taudinp2
+    taurinp3=0.1*ms
+    taudinp3=0.5*ms
+    tauinp3=taudinp3
     
     N_FS,N_RS=20,20
     all_neurons,all_synapses,all_monitors=generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on)    
@@ -192,9 +199,11 @@ if __name__=='__main__':
     plot(R5.t,R5.i+0,'r.',label='RS')
     plot(R6.t,R6.i+20,'b.',label='FS')
     xlim(0,runtime/second)
-    legend(loc='upper left')
-    xlabel('Time (s)')
-    ylabel('Neuron index')
+    legend(loc='upper left',fontsize=12)
+    xlabel('Time (s)',fontsize=12)
+    ylabel('Neuron index',fontsize=12)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
     
 #    figure()
 #    plot(M.t,M.Iinp1[0])

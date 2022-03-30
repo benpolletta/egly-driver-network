@@ -63,6 +63,7 @@ El  = -70 *mV
 if __name__=='__main__' :
     start_scope()
     
+    close('all')
     Vrev_inp=0*mV
 #    taurinp=0.1*ms
 #    taudinp=0.5*ms
@@ -72,31 +73,44 @@ if __name__=='__main__' :
     Vhigh=0*mV
     Vlow=-80*mV
     
-    VIP=NeuronGroup(1,eq_VIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    taurinp2=1*ms
+    taudinp2=5*ms
+    tauinp2=taudinp2
+    
+    VIP=NeuronGroup(100,eq_VIP,threshold='V>0*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-63*mvolt'
-#    VIP.Iapp='5 * uA * cmeter ** -2'
-    VIP.Iapp='0 * uA * cmeter ** -2'
+    VIP.Iapp='i/100 *50 * uA * cmeter ** -2'
+#    VIP.Iapp='0 * uA * cmeter ** -2'
     VIP.Vinp=Vlow
     
-    G_topdown3 = SpikeGeneratorGroup(1, array([0,0]), array([0.25,0.75])*second)
-    topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
-    topdown_in3.connect(j='i')
-    VIP.ginp_VIP_bad=10* msiemens * cm **-2
-    VIP.ginp_VIP_good=10* msiemens * cm **-2
+#    G_topdown3 = SpikeGeneratorGroup(1, array([0,0]), array([0.25,0.75])*second)
+#    topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
+#    topdown_in3.connect(j='i')
+#    VIP.ginp_VIP_bad=0* msiemens * cm **-2
+#    VIP.ginp_VIP_good=0* msiemens * cm **-2
     
     V1=StateMonitor(VIP,'V',record=[0])
+    
+    R1=SpikeMonitor(VIP,record=True)
     
 #    I1=StateMonitor(FS,'IL',record=[0])
 #    I2=StateMonitor(FS,'INa',record=[0])
 #    I3=StateMonitor(FS,'IK',record=[0])
     
-    run(1*second)
+    run(10*second)
     
     figure()
     plot(V1.t/second,V1.V[0]/volt)
     xlabel('Time (s)')
     ylabel('Membrane potential (V)')
     title('VIP cell')
+    
+    print(R1.count[0])
+    
+    figure()
+    plot((VIP.Iapp/ (uA * cmeter ** -2)),R1.count/10)
+    xlabel('I (uA * cmeter ** -2)')
+    ylabel('f (Hz)')
     
 #    figure()
 #    plot(I1.t/second,I1.IL[0],label='L')

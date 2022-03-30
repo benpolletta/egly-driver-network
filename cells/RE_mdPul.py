@@ -14,10 +14,9 @@ eq_RE_mdPul='''
     
     J : amp * meter ** -2
     
-    Isyn=IsynHTC+IsynTC+IsynTCinter+IsynI+IsynRE+IsynREA+IsynREB+Isyn_FEF+Isyn_LIP : amp * meter ** -2
+    Isyn=IsynHTC+IsynTC+IsynI+IsynRE+IsynREA+IsynREB+Isyn_FEF+Isyn_LIP : amp * meter ** -2
     IsynHTC : amp * meter ** -2
     IsynTC : amp * meter ** -2
-    IsynTCinter : amp * meter ** -2
     IsynI : amp * meter ** -2
     IsynRE : amp * meter ** -2
     IsynREA : amp * meter ** -2

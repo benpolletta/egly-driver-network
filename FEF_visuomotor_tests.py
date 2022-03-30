@@ -21,7 +21,8 @@ def generate_deepSI_and_gran_layers(theta_phase,N_SI,N_RS_gran,N_SI_gran,runtime
         input_beta2_FS_SI=True
         input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
-        thal_cond=3* msiemens * cm **-2
+#        thal_cond=3* msiemens * cm **-2
+        thal_cond=5* msiemens * cm **-2
 #        thal_cond=10* msiemens * cm **-2
         kainate='low'
         
@@ -300,8 +301,8 @@ if __name__=='__main__':
     defaultclock.dt = 0.01*ms
     
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5
-    theta_phase='mixed' #'good' or 'bad' or 'mixed'
-    runtime=1*second
+    theta_phase='bad' #'good' or 'bad' or 'mixed'
+    runtime=2*second
     
     Vrev_inp=0*mV
     taurinp=0.1*ms

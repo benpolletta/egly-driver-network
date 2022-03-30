@@ -120,7 +120,7 @@ EKL_HTC=-100*mV
 #gTLT_HTC= 2.1e-3 * siemens * cm **-2
 #gTLT_HTC= 15e-3 * siemens * cm **-2
 #gTLT_HTC= 5e-3 * siemens * cm **-2
-gTLT_HTC= 20e-3 * siemens * cm **-2
+gTLT_HTC= 15e-3 * siemens * cm **-2
 
 #gTHT_HTC= 6e-3 * siemens * cm **-2
 gTHT_HTC= 3e-3 * siemens * cm **-2

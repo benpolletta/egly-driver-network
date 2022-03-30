@@ -54,6 +54,13 @@ def save_raster(name,raster_i,raster_t,path):
         raster_file.write(str(elem)+',')
     raster_file.close()
     return
+
+def zeros_ones_monitor(spikemon,record_dt,runtime):
+    L=int(runtime/record_dt)
+    zeros_ones=[0]*L
+    for time in spikemon.t:
+        zeros_ones[int(time/record_dt)]+=1
+    return zeros_ones
     
 def make_full_network(syn_cond,J,thal,theta_phase):
     
@@ -68,7 +75,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
  
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5
     version = 'Alex'
-    runtime=3*second
+    runtime=1*second
     kainate='low'
     
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
@@ -89,11 +96,12 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     if theta_phase=='good':
         input_beta2_IB=True
         IB_bd.ginp_IB=500* msiemens * cm **-2
+#        IB_bd.ginp_IB=0* msiemens * cm **-2
         input_beta2_RS=False
         input_beta2_FS_SI=False
         input_thalamus_gran=True
         thal_cond=thal
-#        thal_cond=thal#*2754.660086037123/12782.0904181147
+#        thal_cond=thal*2754.660086037123/12782.0904181147
 #        thal_cond=thal*2754.660086037123/139.46773954954165
         input_mixed=False
         
@@ -125,6 +133,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         E_gran.J=J_RSg
     elif kainate=='high':
         E_gran.J='-10 * uA * cmeter ** -2'  #article SI=25, code=1
+#        E_gran.J='-5 * uA * cmeter ** -2'  #article SI=25, code=1
         
     FS_gran=NeuronGroup(N_FS,eq_FS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     FS_gran.V = '-110*mvolt+10*rand()*mvolt'
@@ -447,7 +456,8 @@ def run_one_simulation(simu,path,index_var):
 #        input_beta2_IB=True
         input_beta2_IB=False
         ginp_IB=500* msiemens * cm **-2
-        ginpSIdeep=500* msiemens * cm **-2
+#        ginpSIdeep=500* msiemens * cm **-2
+        ginpSIdeep=0* msiemens * cm **-2
         input_beta2_RS=False
         input_beta2_FS_SI=False
         input_thalamus_gran=True
@@ -502,7 +512,9 @@ def run_one_simulation(simu,path,index_var):
     plot(R4.t,R4.i+20,'b.',label='IB cells')
     plot(R7.t,R7.i,'k.',label='Deep SI')
     xlim(0,runtime/second)
-    legend(loc='upper left')
+    legend(loc='upper left',fontsize=12)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
     
     figure()
 #    plot(inpmon.t,inpmon.Iinp1[0])
@@ -542,6 +554,8 @@ def run_one_simulation(simu,path,index_var):
     
     figure()
     plot(LFP_V_RS)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
     
 #    figure(figsize=(10,8))    
 #    subplot(421)
@@ -604,14 +618,18 @@ def run_one_simulation(simu,path,index_var):
     
     figure()
     plot(f,Spectrum_LFP_V_RS)
-    ylabel('Spectrum')
-    xlabel('Frequency (Hz)')
+    ylabel('Spectrum',fontsize=12)
+    xlabel('Frequency (Hz)',fontsize=12)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
     xlim(0,100)
     
     figure()
     plot(f,Spectrum_LFP_V_RS)
-    ylabel('Spectrum')
-    xlabel('Frequency (Hz)')
+    ylabel('Spectrum',fontsize=12)
+    xlabel('Frequency (Hz)',fontsize=12)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
     xlim(0,50)
     
     figure()
@@ -626,10 +644,47 @@ def run_one_simulation(simu,path,index_var):
     plot(R7.t,R7.i,'g.')
     xlim(0.2,runtime/second)
     ylim(0,220)
+    xticks(fontsize=12)
+    yticks(fontsize=12)
 #    legend(loc='upper left')
-    xlabel('Time (s)')
-    ylabel('Neuron index')
+    xlabel('Time (s)',fontsize=12)
+    ylabel('Neuron index',fontsize=12)
     
+#    N_RS_spikes=zeros_ones_monitor(R1,defaultclock.dt,runtime)
+    N_RS_spikes=zeros_ones_monitor(R4,defaultclock.dt,runtime)
+    figure()
+    plot(N_RS_spikes)
+    f, t, Sxx = signal.spectrogram(array(N_RS_spikes), 100000*Hz,nperseg=20000,noverlap=15000)
+    figure()
+    pcolormesh(t, f, Sxx)#, cmap=)
+    colorbar(format='%.1e')
+    ylabel('Frequency (Hz)')
+    xlabel('Time (s)')
+    ylim(0,100)
+    title('Power ($V^2$)')
+    
+    f,Spectrum_spike_RS=signal.periodogram(array(N_RS_spikes), 100000,'flattop', scaling='density')
+    figure()
+    plot(f,Spectrum_spike_RS)
+    xlabel('Frequency (Hz)')   
+    ylabel('Spectrum')
+    xlim(0,100)
+    
+    L=int(runtime/defaultclock.dt)
+    zeros_ones=[0]*L
+    ind=0
+    for time in R1.t:
+        if R1.i[ind]==1:
+            zeros_ones[int(time/defaultclock.dt)]+=1
+        ind+=1
+    f,Spectrum_spike_RS=signal.periodogram(array(zeros_ones), 100000,'flattop', scaling='density')
+    figure()
+    plot(f,Spectrum_spike_RS)
+    xlabel('Frequency (Hz)')   
+    ylabel('Spectrum')
+    xlim(0,100)    
+    
+
     
 #    min_t=int(50*ms*100000*Hz)
 #    LFP_V_RS=1/N_RS*sum(V1.V,axis=0)[min_t:]
@@ -689,11 +744,12 @@ def run_one_simulation(simu,path,index_var):
     
     ##save figures
     new_path=path+"/results_"+str(index)
-    os.mkdir(new_path)
+    os.mkdir(new_path) 
 
     for n in get_fignums():
         current_fig=figure(n)
         current_fig.savefig(new_path+'/figure'+str(n)+'.png')
+        current_fig.savefig(new_path+'/figure'+str(n)+'.eps')
         
     save_raster('LIP_RS',R1.i,R1.t,new_path)
     save_raster('LIP_FS',R2.i,R2.t,new_path)
@@ -734,9 +790,11 @@ if __name__=='__main__':
 #    all_J_RSg=['-10 * uA * cmeter ** -2','-5 * uA * cmeter ** -2','0 * uA * cmeter ** -2','5 * uA * cmeter ** -2','10 * uA * cmeter ** -2','15 * uA * cmeter ** -2','20 * uA * cmeter ** -2']
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
 #    all_thal=[10* msiemens * cm **-2]
-    all_thal=[0* msiemens * cm **-2]
+    all_thal=[10* msiemens * cm **-2]
+#    all_thal=[0* msiemens * cm **-2]
 #    all_theta=['mixed']
-    all_theta=['mixed','mixed','mixed','mixed','mixed']
+    all_theta=['good']
+#    all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]

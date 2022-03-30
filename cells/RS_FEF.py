@@ -42,8 +42,8 @@ Iinp1=sinp*ginp_RS*(V-Vrev_inp) : amp * meter ** -2
     ginp_RS : siemens * meter **-2
     
 Iinp2=sinp2*ginp_RS2*(V-Vrev_inp) : amp * meter ** -2
-    dsinp2/dt=-sinp2/taudinp + (1-sinp2)/taurinp*0.5*(1+tanh(Vinp2/10/mV)) : 1
-    dVinp2/dt=1/tauinp*(Vlow-Vinp2) : volt
+    dsinp2/dt=-sinp2/taudinp3 + (1-sinp2)/taurinp3*0.5*(1+tanh(Vinp2/10/mV)) : 1
+    dVinp2/dt=1/tauinp3*(Vlow-Vinp2) : volt
     ginp_RS2 : siemens * meter **-2
     
 Iinp3: amp * meter ** -2
@@ -66,6 +66,9 @@ sig_ranRS=0.15* mamp * cm **-2
 sig_ranRS=0.15* mamp * cm **-2*0.5
 g_ranRS=0.03* msiemens * cm **-2
 
+sig_ranRS=0.15* mamp * cm **-2*0
+g_ranRS=0.03* msiemens * cm **-2*0
+
 #gL_RS=0.9 * msiemens * cm **-2
 #gNa_RS=200 * msiemens * cm **-2
 #gK_RS=20 * msiemens * cm **-2
@@ -79,11 +82,14 @@ if __name__=='__main__' :
     taurinp=0.1*ms
     taudinp=0.5*ms
     tauinp=taudinp
+    taurinp3=0.1*ms
+    taudinp3=0.5*ms
+    tauinp3=taudinp3
     Vhigh=0*mV
     Vlow=-80*mV
     ginp=0* msiemens * cm **-2
         
-    RS=NeuronGroup(1,eq_RS_FEF,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    RS=NeuronGroup(100,eq_RS_FEF,threshold='V>0*mvolt',refractory=3*ms,method='rk4')
 #    RS.V = '-70*mvolt+10*rand()*mvolt'
 #    RS.h = '0+0.05*rand()'
 #    RS.m = '0+0.05*rand()'
@@ -93,16 +99,16 @@ if __name__=='__main__' :
     RS.h = '0.56'
     RS.m = '0.038'
     RS.mAR = '0.01'
-    RS.J='-5 * uA * cmeter ** -2'
+    RS.J='-i/100 *35 * uA * cmeter ** -2'
 
-    sig_ranRS=0.15* mamp * cm **-2*0
-    g_ranRS=0.03* msiemens * cm **-2*0
+    
 #    Poisson_input = PoissonGroup(1,0.1/ms)
 #    in_syn = Synapses(Poisson_input, RS, on_pre='s_ran+=0.0001') #defaultclock.dt
 #    in_syn.connect(j='i')
     
     
     V1=StateMonitor(RS,'V',record=[0])
+    R1=SpikeMonitor(RS,record=True)
     
 #    I1=StateMonitor(RS,'IL',record=[0])
 #    I2=StateMonitor(RS,'INa',record=[0])
@@ -115,13 +121,18 @@ if __name__=='__main__' :
     M3=StateMonitor(RS,'m',record=[0])
     M4=StateMonitor(RS,'mAR',record=[0])
     
-    run(1*second)
+    run(10*second)
     
     figure()
     plot(V1.t/second,V1.V[0]/volt)
     xlabel('Time (s)')
     ylabel('Membrane potential (V)')
     title('RS cell')
+    
+    figure()
+    plot((-RS.J/ (uA * cmeter ** -2)),R1.count/10)
+    xlabel('I (uA * cmeter ** -2)')
+    ylabel('f (Hz)')
     
 #    figure()
 #    plot(I1.t/second,I1.IL[0],label='L')

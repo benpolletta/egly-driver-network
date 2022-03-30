@@ -129,10 +129,12 @@ if __name__=='__main__':
     print('Creating the network')
     N_RS_vis,N_FS_vis,N_RS_mot,N_dSI_vm,N_RS_vm,N_gSI_vm=[20]*6
     
-    theta_phase='mixed'
+#    theta_phase='mixed'
+    theta_phase='bad'
+#    theta_phase='good'
     target_on=True
     runtime=1*second
-    target_time=650*msecond
+    target_time=500*msecond
 #    target_time=1500*msecond
     
     net=Network()

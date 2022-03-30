@@ -109,15 +109,15 @@ def create_FEF_and_LIP_and_mdPul(N_RS_vis,N_FS_vis,N_RS_mot,N_dSI_vm,N_RS_vm,N_g
     IB_SC_soma.h = '0+0.05*rand()'
     IB_SC_soma.m = '0+0.05*rand()'
 #    IB_SC_soma.J='-4.5 * uA * cmeter ** -2' #article SI=-3.5, code=-4.5
-    IB_SC_soma.J='-3.5 * uA * cmeter ** -2' #article SI=-3.5, code=-4.5
+    IB_SC_soma.J='-1.5 * uA * cmeter ** -2' #article SI=-3.5, code=-4.5
     
     IB_SC_axon=NeuronGroup(N_IB,eq_IB_axon,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     IB_SC_axon.V = '-100*mvolt+10*rand()*mvolt'
     IB_SC_axon.h = '0+0.05*rand()'
     IB_SC_axon.m = '0+0.05*rand()'
     IB_SC_axon.mKM = '0+0.05*rand()'
-    IB_SC_axon.J='-0.4 * uA * cmeter ** -2' #article SI=+0.1, code=-0.4
-#    IB_SC_axon.J='0 * uA * cmeter ** -2' #article SI=+0.1, code=-0.4
+#    IB_SC_axon.J='-0.4 * uA * cmeter ** -2' #article SI=+0.1, code=-0.4
+    IB_SC_axon.J='0.1 * uA * cmeter ** -2' #article SI=+0.1, code=-0.4
     
     IB_SC_ad=NeuronGroup(N_IB,eq_IB_ad,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     IB_SC_ad.V = '-100*mvolt+10*rand()*mvolt'

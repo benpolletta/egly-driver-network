@@ -15,7 +15,7 @@ from cells.SI_FEF import *
 from cells.VIP_FEF_vis import *
 
 def generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on,target_time):
-    
+#    print(target_on, theta_phase)
     if theta_phase=='bad':
         ginp_IB=0* msiemens * cm **-2
         input_beta2_RS=False
@@ -70,11 +70,13 @@ def generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on,target_time)
     SI.V = '-70*mvolt+10*rand()*mvolt'
     SI.h = '0+0.05*rand()'
     SI.m = '0+0.05*rand()'
-    SI.J='40 * uA * cmeter ** -2' #article=code=35  
+#    SI.J='40 * uA * cmeter ** -2'  
+    SI.J='50 * uA * cmeter ** -2'  
     
     VIP=NeuronGroup(N_FS,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-90*mvolt+10*rand()*mvolt'
-    VIP.Iapp='5 * uA * cmeter ** -2' #article=code=35    
+    VIP.Iapp='5 * uA * cmeter ** -2'    
+#    VIP.Iapp='5.5 * uA * cmeter ** -2' 
 
 
     ##Synapses
@@ -107,10 +109,11 @@ def generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on,target_time)
 
 #    S_VIPSI=generate_syn(VIP,SI,'IsynSI_FEF_VM','i//10==j//10',0.7* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
     S_VIPSI=generate_syn(VIP,SI,'IsynSI_FEF_VM','i//10==j//10',0.7* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+#    S_SIVIP=generate_syn(SI,VIP,'IsynSI_FEF_VM','',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
     S_SIVIP=generate_syn(SI,VIP,'IsynSI_FEF_VM','',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
 
-
     S_SIRS=generate_syn(SI,RS,'IsynSI2_FEF_VM','i//10==j//10',1.5* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+#    S_SIRS=generate_syn(SI,RS,'IsynSI2_FEF_VM','i//10==j//10',1* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
     
 #    print(S_SIVIP)
     
@@ -130,21 +133,23 @@ def generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on,target_time)
 #        FS.ginp_VIP_good=thal_cond*1
 #        FS.ginp_VIP_bad=thal_cond*1
         FS.ginp_FS=thal_cond*0
+#        RS.ginp_RS=7.5* msiemens * cm **-2
+#        SI.ginp_SI=7.5* msiemens * cm **-2
         RS.ginp_RS=7.5* msiemens * cm **-2
         SI.ginp_SI=7.5* msiemens * cm **-2
-#        RS.ginp_RS=7* msiemens * cm **-2
-#        SI.ginp_SI=7* msiemens * cm **-2
-#        VIP.ginp_VIP_good=2.5* msiemens * cm **-2
-#        VIP.ginp_VIP_bad=2.5* msiemens * cm **-2
-        VIP.ginp_VIP_good=3* msiemens * cm **-2
-        VIP.ginp_VIP_bad=3* msiemens * cm **-2
+        VIP.ginp_VIP_good=2.5* msiemens * cm **-2
+        VIP.ginp_VIP_bad=2.5* msiemens * cm **-2
+#        VIP.ginp_VIP_good=7.5* msiemens * cm **-2
+#        VIP.ginp_VIP_bad=7.5* msiemens * cm **-2
+#        VIP.ginp_VIP_good=3* msiemens * cm **-2
+#        VIP.ginp_VIP_bad=3* msiemens * cm **-2
         if theta_phase=='good':
             fLIP=50*Hz
 #            fLIP=25*Hz
         else :
 #            fLIP=50*Hz
             fLIP=13*Hz
-#        print(fLIP)
+        print(fLIP)
             
         gamma_background=generate_spike_timing(N_FS,fLIP,0*ms,end_time=3000*ms)
         
@@ -189,15 +194,18 @@ def generate_visual_neurons(theta_phase,N_FS,N_RS,runtime,target_on,target_time)
         S_in_target_SI=Synapses(Poisson_target,SI,on_pre='Vinp2=Vhigh')
         S_in_target_SI.connect(j='i')
         SI.ginp_SI2=2.5* msiemens * cm **-2
-        VIP.ginp_VIP2=2.5* msiemens * cm **-2
-##        SI.ginp_SI2=3* msiemens * cm **-2
-##        VIP.ginp_VIP2=3* msiemens * cm **-2
+        VIP.ginp_VIP2=3* msiemens * cm **-2
+#        SI.ginp_SI2=3* msiemens * cm **-2
+#        VIP.ginp_VIP2=5* msiemens * cm **-2
         RS.ginp_RS2=2.5* msiemens * cm **-2
 #        SI.ginp_SI2=7.5* msiemens * cm **-2
 #        VIP.ginp_VIP2=7.5* msiemens * cm **-2
 #        SI.ginp_SI2=3* msiemens * cm **-2
 #        VIP.ginp_VIP2=3* msiemens * cm **-2
 #        RS.ginp_RS2=7.5* msiemens * cm **-2
+    
+#    print(Poisson_background.spike_time)
+#    print(Poisson_target.spike_time)
     
     #Define monitors and run network :
     R5=SpikeMonitor(RS,record=True)
@@ -222,10 +230,12 @@ if __name__=='__main__':
     defaultclock.dt = 0.01*ms
     
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5
-    theta_phase='mixed' #'good' or 'bad' or 'mixed'
+#    theta_phase='mixed' #'good' or 'bad' or 'mixed'
+    theta_phase='good' #'good' or 'bad' or 'mixed'
+#    theta_phase='bad' #'good' or 'bad' or 'mixed'
     runtime=1*second
     target_on=True
-    target_time=600*msecond
+    target_time=650*msecond
     
     Vrev_inp=0*mV
     taurinp=0.1*ms
@@ -258,6 +268,15 @@ if __name__=='__main__':
     taurinp2=2*ms
     taudinp2=10*ms
     tauinp2=taudinp2   
+#    taurinp2=0.1*ms
+#    taudinp2=0.5*ms
+#    tauinp2=taudinp2  
+    taurinp3=2*ms
+    taudinp3=40*ms
+    tauinp3=taudinp3
+#    taurinp3=0.1*ms
+#    taudinp3=0.5*ms
+#    tauinp3=taudinp3
     
     prefs.codegen.target = 'cython' #cython=faster, numpy = default python
     
@@ -273,7 +292,7 @@ if __name__=='__main__':
     xlim(0.2,runtime/second)
     xlabel('Time (s)')
     ylabel('Neuron index')
-#    legend(loc='upper left')
+    legend(loc='upper left')
     
 #    figure()
 #    plot(R5.t,R5.i+0,'r.',label='RS')

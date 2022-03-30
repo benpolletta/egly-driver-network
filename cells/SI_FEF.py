@@ -63,7 +63,7 @@ VAR_SI=-35*mV
 
 sig_ranSI=0.05* mamp * cm **-2
 sig_ranSI=0.05* mamp * cm **-2*0.5
-sig_ranSI=0.05* mamp * cm **-2*0
+#sig_ranSI=0.05* mamp * cm **-2*0
 
 if __name__=='__main__' :
     start_scope()
@@ -76,26 +76,32 @@ if __name__=='__main__' :
     ginp_IB=0* msiemens * cm **-2
     ginp=0* msiemens * cm **-2
     
-    SI=NeuronGroup(1,eq_SI_FEF,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    SI=NeuronGroup(100,eq_SI_FEF,threshold='V>0*mvolt',refractory=3*ms,method='rk4')
     SI.V = '-100*mvolt+10*rand()*mvolt'
     SI.h = '0+0.05*rand()'
     SI.m = '0+0.05*rand()'
     SI.mAR = '0.02+0.04*rand()'
-    SI.J='-10 * uA * cmeter ** -2'
+    SI.J='-i/100 *35 * uA * cmeter ** -2'
     
     V1=StateMonitor(SI,'V',record=[0])
+    R1=SpikeMonitor(SI,record=True)
     
 #    I1=StateMonitor(SI,'IL',record=[0])
 #    I2=StateMonitor(SI,'INa',record=[0])
 #    I3=StateMonitor(SI,'IK',record=[0])
     
-    run(1*second)
+    run(10*second)
     
     figure()
     plot(V1.t/second,V1.V[0]/volt)
     xlabel('Time (s)')
     ylabel('Membrane potential (V)')
     title('SI cell')
+    
+    figure()
+    plot((-SI.J/ (uA * cmeter ** -2)),R1.count/10)
+    xlabel('I (uA * cmeter ** -2)')
+    ylabel('f (Hz)')
     
 #    figure()
 #    plot(I1.t/second,I1.IL[0],label='L')
