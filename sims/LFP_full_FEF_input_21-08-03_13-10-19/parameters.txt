@@ -1,0 +1,2 @@
+[(20. * siemens * meter ** -2, 10. * siemens * meter ** -2, 10. * siemens * meter ** -2, 5. * siemens * meter ** -2, 3. * siemens * meter ** -2, 20. * siemens * meter ** -2, 1. * siemens * meter ** -2, 1. * siemens * meter ** -2), ('10 * uA * cmeter ** -2', '-5 * uA * cmeter ** -2'), 100. * siemens * meter ** -2, 'mixed', 0]
+
