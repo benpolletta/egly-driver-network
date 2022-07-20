@@ -72,11 +72,11 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     runtime=3*second
     kainate='low'
     
-    slot_duration = 200*ms
-    timeslots=zeros((int(around(runtime/slot_duration)),1))
-    target_index = int(around(target_time/slot_duration))
-    timeslots[target_index]=1
-    sinp_SI=TimedArray(timeslots, dt=slot_duration)
+    # slot_duration = 100*ms
+    # timeslots=zeros((int(around(runtime/slot_duration)),))
+    # target_index = int(around(target_time/slot_duration))
+    # timeslots[target_index]=1
+    # sinp_SI=TimedArray(array(timeslots), dt=slot_duration)
     
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
@@ -498,7 +498,12 @@ def run_one_simulation(simu,path,index_var):
     
     net = Network(collect())
     
-    # target_time=500*ms
+    target_time=500*ms
+    slot_duration = 100*ms
+    timeslots=zeros((int(around(runtime/slot_duration)),))
+    target_index = int(around(target_time/slot_duration))
+    timeslots[target_index]=1
+    sinp_SI=TimedArray(array(timeslots), dt=slot_duration)
     # timeslots=zeros((int(around(runtime*10/second)),))
     # target_index = int(around(target_time/(100*ms)))
     # timeslots[target_index]=1
