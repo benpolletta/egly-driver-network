@@ -15,6 +15,7 @@ from scipy import signal
 from cells.RS_LIP import *
 from cells.FS_LIP import *
 from cells.SI_LIP import *
+from cells.SI_LIP_deep import *
 from cells.IB_soma_LIP import *
 from cells.IB_axon_LIP import *
 from cells.IB_apical_dendrite_LIP import *
@@ -65,15 +66,19 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     gSIdFSg,gFSgRSg,gRSgFSg,gRSgRSg,gFSgFSg,gRSgRSs,gRSgFSs,gFSgRSs=syn_cond
     J_RSg,J_FSg=J
     
- 
     FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5
     version = 'Alex'
     runtime=3*second
     kainate='low'
     
+    timeslots=zeros((int(around(runtime*10/second)),1))
+    sinp_SI=TimedArray(timeslots, dt=100*ms)
+    
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
     RS, FS, SI, IB_soma,IB_axon,IB_bd,IB_ad =all_neurons
+    
+    SI.ginp_SI=0* msiemens * cm **-2
    
     if theta_phase=='bad':
         input_beta2_IB=False
@@ -81,10 +86,9 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         input_beta2_FS_SI=True
         input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
-        SI.ginp_SI=0* msiemens * cm **-2
+        SI.ginp_SI1=0* msiemens * cm **-2
         thal_cond=2* msiemens * cm **-2
         input_mixed=False
-        
         
     if theta_phase=='good':
         input_beta2_IB=True
@@ -136,7 +140,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     elif kainate=='high':
         FS_gran.J='16 * uA * cmeter ** -2'
     
-    SI_deep=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='SIdeepLIP')
+    SI_deep=NeuronGroup(N_SI,eq_SI_LIP_deep,threshold='V>-20*mvolt',refractory=3*ms,method='rk4',name='SIdeepLIP')
     SI_deep.V = '-100*mvolt+10*rand()*mvolt'
     SI_deep.h = '0+0.05*rand()'
     SI_deep.m = '0+0.05*rand()'
@@ -599,7 +603,7 @@ def run_one_simulation(simu,path,index_var):
         return normed
     
     f, t, Sxx = signal.spectrogram(squeeze(LFPflip), fs, nperseg=25000, noverlap=20000)
-    pctSxx = pctMean(squeeze(Sxx), 0)
+    pctSxx = pctMean(squeeze(Sxx[:, end_length:-end_length]), 0)
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
@@ -611,14 +615,14 @@ def run_one_simulation(simu,path,index_var):
     #freq = logspace(0, 2, 50)*Hz
     freq = linspace(1/second, 100*Hz, 100)
     #widths = logspace(log10(3),log10(30),50)*fs/(2*freq*pi)
-    widths = linspace(3, 30, 100)*fs/(2*freq*pi)
+    widths = 6*fs/freq#linspace(3, 30, 100)*fs/(2*freq*pi)
     
-    CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths)
+    CWT = signal.cwt(squeeze(LFPflip), signal.morlet2, widths, w=6)
     CWT = CWT[:, end_length:-end_length]
     # CWTmean = diag(mean(CWT, axis=1))
     # mean_mat = matmul(CWTmean, ones(shape(CWT)))
     # CWTpct = (CWT - mean_mat)/mean_mat
-    CWTpct = pctMean(CWT, 1)
+    CWTpct = pctMean(absolute(CWT), 1)
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
@@ -629,7 +633,7 @@ def run_one_simulation(simu,path,index_var):
     
     figure()
     #f, t, Sxx = signal.spectrogram(LFP_LIP, 100000*Hz,nperseg=30000,noverlap=25000)
-    pcolormesh(V1.t, freq, absolute(CWTpct))#, cmap='RdBu')#, shading='gouraud')
+    pcolormesh(V1.t, freq, CWTpct)#, cmap='RdBu')#, shading='gouraud')
     ylabel('Frequency [Hz]')
     xlabel('Time [sec]')
     ylim(0, 75)
@@ -844,7 +848,7 @@ if __name__=='__main__':
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
     all_thal=[10* msiemens * cm **-2]
 #    all_thal=[0* msiemens * cm **-2]
-    all_theta=['mixed']
+    all_theta=['bad']
     #all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
