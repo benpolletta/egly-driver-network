@@ -8,7 +8,7 @@ defaultclock.dt = 0.01*ms
 eq_IB_bd='''
 dV/dt=1/C_IB_bd*(-J-Isyn-Igap-Iran-Iapp-IL-INa-IK-IAR-IKM-ICaH) : volt
 J : amp * meter ** -2
-Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
+Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+IsynSI2_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
 IsynRS_LIP_sup : amp * meter ** -2
 IsynFS_LIP_sup : amp * meter ** -2
 IsynSI_LIP_sup : amp * meter ** -2
@@ -16,6 +16,7 @@ IsynRS_LIP_gran : amp * meter ** -2
 IsynFS_LIP_gran : amp * meter ** -2
 IsynIB_LIP : amp * meter ** -2
 IsynSI_LIP_deep : amp * meter ** -2
+IsynSI2_LIP_deep : amp * meter ** -2
 Isyn_FEF : amp * meter ** -2
 Isyn_mdPul : amp * meter ** -2
 Igap = Igap_soma+Igap_axon+Igap_ad+Igap_bd : amp * meter ** -2

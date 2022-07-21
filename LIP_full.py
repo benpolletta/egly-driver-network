@@ -434,7 +434,7 @@ def run_one_simulation(simu,path,index_var):
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
-        input_beta2_FS_SI=True
+        input_beta2_FS_SI=False
         input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
         ginp_SI=0* msiemens * cm **-2
@@ -444,8 +444,8 @@ def run_one_simulation(simu,path,index_var):
         input_mixed=False
         
     if theta_phase=='good':
-#        input_beta2_IB=True
-        input_beta2_IB=False
+        input_beta2_IB=True
+        # input_beta2_IB=False
         ginp_IB=500* msiemens * cm **-2
         ginpSIdeep=500* msiemens * cm **-2
         input_beta2_RS=False
@@ -735,8 +735,8 @@ if __name__=='__main__':
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
 #    all_thal=[10* msiemens * cm **-2]
     all_thal=[0* msiemens * cm **-2]
-#    all_theta=['mixed']
-    all_theta=['mixed','mixed','mixed','mixed','mixed']
+    all_theta=['good']
+    # all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]
