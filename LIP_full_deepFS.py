@@ -75,7 +75,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
     RS, FS, SI, IB_soma,IB_axon,IB_bd,IB_ad =all_neurons
    
-    if theta_phase=='poor':
+    if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
         input_beta2_FS_SI=False
@@ -259,7 +259,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
             list_time_and_i+=list_time
         return array(list_time_and_i)
     
-    G_topdown,G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2=[None]*7
+    G_topdown,G_topdown2,G_topdown3,G_topdown4,G_lateral,G_lateral2,Poisson_input,Poisson_input2=[None]*8
     topdown_in,topdown_in2,topdown_in3,topdown_in4,lateral_in,lateral_in2,bottomup_in,bottomup_in2=[None]*8
     
     if input_beta2_IB:
@@ -281,7 +281,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         
     if input_beta2_RS:    
         RS.ginp_RS_good=4* msiemens * cm **-2
-        RS.ginp_RS_poor=4* msiemens * cm **-2
+        RS.ginp_RS_bad=4* msiemens * cm **-2
         inputs_topdown2=generate_spike_timing(N_RS,25*Hz,0*ms,end_time=10000*ms)
         G_topdown2 = SpikeGeneratorGroup(N_RS, inputs_topdown2[:,1], inputs_topdown2[:,0]*second)
         topdown_in2=Synapses(G_topdown2,RS,on_pre='Vinp=Vhigh')
@@ -289,7 +289,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         
     if input_beta2_FS_SI:
         FS.ginp_FS_good=gFS
-        FS.ginp_FS_poor=gFS
+        FS.ginp_FS_bad=gFS
         inputs_lateral=generate_spike_timing(N_FS,25*Hz,0*ms,end_time=10000*ms)
         G_lateral = SpikeGeneratorGroup(N_FS, inputs_lateral[:,1], inputs_lateral[:,0]*second)
         lateral_in=Synapses(G_lateral,FS,on_pre='Vinp=Vhigh')
@@ -303,9 +303,9 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     if input_thalamus_gran:
         E_gran.ginp_RS_good=thal_cond
         FS_gran.ginp_FS_good=thal_cond
-        E_gran.ginp_RS_poor=thal_cond
-        FS_gran.ginp_FS_poor=thal_cond
-#        print(E_gran.ginp_RS_good,FS_gran.ginp_FS_good,E_gran.ginp_RS_poor,FS_gran.ginp_FS_poor)
+        E_gran.ginp_RS_bad=thal_cond
+        FS_gran.ginp_FS_bad=thal_cond
+#        print(E_gran.ginp_RS_good,FS_gran.ginp_FS_good,E_gran.ginp_RS_bad,FS_gran.ginp_FS_bad)
 #        FS_gran.ginp_FS=thal_cond
         inputs_mdpul=generate_spike_timing(N_FS,13*Hz,0*ms,end_time=10000*ms)
         Poisson_input = SpikeGeneratorGroup(N_FS, inputs_mdpul[:,1], inputs_mdpul[:,0]*second)
@@ -322,10 +322,10 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     if input_mixed:
         E_gran.ginp_RS_good=thal_cond
         FS_gran.ginp_FS_good=thal_cond
-#        E_gran.ginp_RS_poor=2* msiemens * cm **-2
-#        FS_gran.ginp_FS_poor=2* msiemens * cm **-2
-        E_gran.ginp_RS_poor=thal_cond
-        FS_gran.ginp_FS_poor=thal_cond
+#        E_gran.ginp_RS_bad=2* msiemens * cm **-2
+#        FS_gran.ginp_FS_bad=2* msiemens * cm **-2
+        E_gran.ginp_RS_bad=thal_cond
+        FS_gran.ginp_FS_bad=thal_cond
 #        FS_gran.ginp_FS='15* msiemens * cm **-2 * int(sin(2*pi*t*4*Hz)>0) + 2* msiemens * cm **-2 * int(sin(2*pi*t*4*Hz)<0)'
 #        inputs_mdpul=generate_spike_timing_theta(N_FS,13*Hz,0*ms,end_time=3000*ms)
 
@@ -430,7 +430,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     inpIBmon=StateMonitor(SI_deep,'Iapp',record=[0])
 
     all_neurons=all_neurons+(E_gran,FS_gran,SI_deep,FS_deep)+tuple(g_inputs)
-    all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_FSdeepIB,S_FSdeepSIdeep,S_SIdeepIB,S_SIdeepFSgran,S_SIdeepFSdeep)+tuple(syn_inputs)
+    all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_IBFSdeep,S_FSdeepIB,S_FSdeepSIdeep,S_SIdeepIB,S_SIdeepFSgran,S_SIdeepFSdeep)+tuple(syn_inputs)
     all_monitors=all_monitors+(R5,R6,R7,R8,V5,V6,V7,V8,inpmon,inpIBmon)
     return all_neurons, all_synapses, all_gap_junctions, all_monitors
 
@@ -459,7 +459,7 @@ def run_one_simulation(simu,path,index_var):
     syn_cond,J,thal,theta_phase,index=simu
     print('Simulation '+str(index))
     
-    if theta_phase=='poor':
+    if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
         input_beta2_FS_SI=True
@@ -766,7 +766,7 @@ if __name__=='__main__':
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
 #    all_thal=[10* msiemens * cm **-2]
     all_thal=[0* msiemens * cm **-2]
-    all_theta=['poor']
+    all_theta=['bad']
     # all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
@@ -781,7 +781,7 @@ if __name__=='__main__':
     #all_J_RSg=['30 * uA * cmeter ** -2']
     #all_J_FSg=['30 * uA * cmeter ** -2']
     #all_thal=[15* msiemens * cm **-2]
-    #all_theta=['good','poor']
+    #all_theta=['good','bad']
     
     
     all_syn_cond=list(product(all_SIdFSg,all_FSgRSg,all_RSgFSg,all_RSgRSg,all_FSgFSg,all_RSgRSs,all_RSgFSs,all_FSgRSs))
