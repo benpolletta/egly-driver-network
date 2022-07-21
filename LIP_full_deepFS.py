@@ -224,14 +224,14 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     S_IBFSdeep=generate_syn(IB_axon,FS_deep,'IsynIB_LIP','',0.01* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
         
     #From deep FS cells
-    S_FSdeepIB=generate_syn(FS_deep,IB_soma,'Isyn','',5* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
+    S_FSdeepIB=generate_syn(FS_deep,IB_soma,'Isyn','',1* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
     S_FSdeepSIdeep=generate_syn(FS_deep,SI_deep,'IsynSI_LIP_deep','',0.4* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
     
     #From deep SI cells    
     S_SIdeepIB=generate_syn(SI_deep,IB_bd,'IsynSI_LIP_deep','',5* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
     #S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSIdeep','',0.4* usiemens * cm **-2*FLee,0.25*ms,20*ms,-80*mV)
     S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSI_LIP_deep','',gSIdFSg,0.25*ms,20*ms,-80*mV)
-    S_SIdeepFSdeep=generate_syn(SI_deep,FS_deep,'IsynSI_LIP_deep','',gSIdFSg,0.25*ms,20*ms,-80*mV)
+    S_SIdeepFSdeep=generate_syn(SI_deep,FS_deep,'IsynSI_LIP_deep','',0.4*msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
     
     
     
@@ -529,7 +529,7 @@ def run_one_simulation(simu,path,index_var):
     plot(R6.t,R6.i+70,'c.',label='Granular FS')
     plot(R4.t,R4.i+40,'b.',label='IB cells')
     plot(R7.t,R7.i+20,'k.',label='Deep SI')
-    plot(R7.t,R7.i,'.',color='tab:gray',label='Deep FS')
+    plot(R8.t,R8.i,'.',color='tab:gray',label='Deep FS')
     xlim(0,runtime/second)
     legend(loc='upper left')
     
@@ -625,7 +625,7 @@ def run_one_simulation(simu,path,index_var):
     plot(R6.t,R6.i+70,'c.',label='Granular FS')
     plot(R4.t,R4.i+40,'m.',label='IB cells')
     plot(R7.t,R7.i+20,'.',label='Deep SI',color='lime')
-    plot(R8.t,R8.i+20,'.',label='Deep FS',color='purple')
+    plot(R8.t,R8.i,'.',label='Deep FS',color='purple')
     xlim(0,runtime/second)
     ylim(0,220)
     legend(loc='upper left')
