@@ -275,8 +275,8 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         topdown_in3.connect(j='i')
         
         inputs_topdown4=generate_spike_timing(N_SI,beta2freq,0*ms,end_time=10000*ms)
-        G_topdown4 = SpikeGeneratorGroup(N_SI, inputs_topdown4[:,1], inputs_topdown4[:,0]*second)
-        topdown_in4=Synapses(G_topdown3,SI2_deep,on_pre='Vinp=Vhigh')
+        G_topdown4 = SpikeGeneratorGroup(N_FS, inputs_topdown4[:,1], inputs_topdown4[:,0]*second)
+        topdown_in4=Synapses(G_topdown4,FS_deep,on_pre='Vinp=Vhigh')
         topdown_in4.connect(j='i')
         
     if input_beta2_RS:    
@@ -391,8 +391,8 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         topdown_in3.connect(j='i')
         
         inputs_topdown4=generate_spike_timing(N_SI,beta2freq,0*ms,end_time=10000*ms)
-        G_topdown4 = SpikeGeneratorGroup(N_SI, inputs_topdown4[:,1], inputs_topdown4[:,0]*second)
-        topdown_in4=Synapses(G_topdown3,SI2_deep,on_pre='Vinp=Vhigh')
+        G_topdown4 = SpikeGeneratorGroup(N_FS, inputs_topdown4[:,1], inputs_topdown4[:,0]*second)
+        topdown_in4=Synapses(G_topdown4,FS_deep,on_pre='Vinp=Vhigh')
         topdown_in4.connect(j='i')
     
 #    g_inputs=[G_topdown,G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2]
