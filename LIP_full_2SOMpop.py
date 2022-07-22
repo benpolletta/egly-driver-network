@@ -83,7 +83,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
-        input_beta2_FS_SI=Falsbade
+        input_beta2_FS_SI=False
         input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
         #SI.ginp_SI1=0* msiemens * cm **-2
@@ -181,7 +181,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     
     if theta_phase=='good' or theta_phase=='mixed':
 #        SI2_deep.ginp_SI=50* msiemens * cm **-2
-        SI2_deep.ginp_SI=5* msiemens * cm **-2
+        SI2_deep.ginp_SI=10* msiemens * cm **-2
 #        SI2_deep.ginp_SI=0* msiemens * cm **-2
     Vlow=-80*mV
     SI2_deep.Vinp=Vlow
@@ -328,14 +328,19 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         inputs_mdpul=generate_spike_timing(N_FS,13*Hz,0*ms,end_time=10000*ms)
         Poisson_input = SpikeGeneratorGroup(N_FS, inputs_mdpul[:,1], inputs_mdpul[:,0]*second)
 #        Poisson_input = PoissonGroup(N_FS,100*Hz)
-        bottomup_in = Synapses(Poisson_input,FS_gran, on_pre='Vinp=Vhigh')
+        bottomup_in = Synapses(Poisson_input, FS_gran, on_pre='Vinp=Vhigh')
         bottomup_in.connect(j='i')
 #        E_gran.ginp_RS=thal_cond
         Poisson_input2 = SpikeGeneratorGroup(N_FS, inputs_mdpul[:,1], inputs_mdpul[:,0]*second)
 #        Poisson_input2 = PoissonGroup(N_FS,100*Hz)
-        bottomup_in2 = Synapses(Poisson_input2,E_gran, on_pre='Vinp=Vhigh')
+        bottomup_in2 = Synapses(Poisson_input2, E_gran, on_pre='Vinp=Vhigh')
         bottomup_in2.connect(j='i')
     #    print(bottomup_in,bottomup_in2)
+        
+        Poisson_input3 = SpikeGeneratorGroup(N_SI, inputs_mdpul[:,1], inputs_mdpul[:,0]*second)
+#        Poisson_input2 = PoissonGroup(N_FS,100*Hz)
+        bottomup_in3 = Synapses(Poisson_input3, SI2_deep, on_pre='Vinp=Vhigh')
+        bottomup_in3.connect(j='i')
     
     if input_mixed:
         E_gran.ginp_RS_good=thal_cond
@@ -422,9 +427,9 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #    print(E_gran.ginp_RS_good)
 #    print(Poisson_input2)
     
-    g_inputs=[G_topdown2,G_topdown3,G_topdown4,G_lateral,G_lateral2,Poisson_input,Poisson_input2]
+    g_inputs=[G_topdown2,G_topdown3,G_topdown4,G_lateral,G_lateral2,Poisson_input,Poisson_input2,Poisson_input3]
     g_inputs=[y for y in g_inputs if y]
-    syn_inputs=[topdown_in2,topdown_in3,topdown_in4,lateral_in,lateral_in2,bottomup_in,bottomup_in2]
+    syn_inputs=[topdown_in2,topdown_in3,topdown_in4,lateral_in,lateral_in2,bottomup_in,bottomup_in2,bottomup_in3]
     syn_inputs=[y for y in syn_inputs if y]
     
 #    print(len(g_inputs))
@@ -459,7 +464,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     #    print(property, ": ", value)
 
     all_neurons=all_neurons+(E_gran,FS_gran,SI_deep,SI2_deep)+tuple(g_inputs)
-    all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_IBFSdeep,S_SIdeepIB,S_SIdeepFSgran,S_SIdeepSI2deep,S_SI2deepIB,S_SI2deepSIdeep)+tuple(syn_inputs)
+    all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_IBSI2deep,S_SIdeepIB,S_SIdeepFSgran,S_SIdeepSI2deep,S_SI2deepIB,S_SI2deepSIdeep)+tuple(syn_inputs)
     all_monitors=all_monitors+(R5,R6,R7,R8,V5,V6,V7,V8,inpmon,inpSImon)
     return all_neurons, all_synapses, all_gap_junctions, all_monitors
 
@@ -492,7 +497,7 @@ def run_one_simulation(simu,path,index_var):
         input_beta2_IB=False
         input_beta2_RS=False
         input_beta2_FS_SI=True
-        input_thalamus_gran=True
+        input_thalamus_gran=False
         gFS=0* msiemens * cm **-2
         ginp_SI=0* msiemens * cm **-2
         ginpSIdeep=0* msiemens * cm **-2
@@ -507,7 +512,7 @@ def run_one_simulation(simu,path,index_var):
         ginpSIdeep=500* msiemens * cm **-2
         input_beta2_RS=False
         input_beta2_FS_SI=False
-        input_thalamus_gran=True
+        input_thalamus_gran=False
         thal_cond=thal
         kainate='low'
         input_mixed=False
