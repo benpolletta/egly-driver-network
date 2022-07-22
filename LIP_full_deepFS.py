@@ -142,9 +142,9 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     FS_deep.m = '0+0.05*rand()'
     if kainate=='low':
     #    FS_gran.J='5 * uA * cmeter ** -2' #article=code=35
-        FS_gran.J=J_FSg
+        FS_deep.J='10 * uA * cmeter ** -2'
     elif kainate=='high':
-        FS_gran.J='16 * uA * cmeter ** -2'
+        FS_deep.J='-5 * uA * cmeter ** -2'
     
     SI_deep=NeuronGroup(N_SI,eq_SI_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     SI_deep.V = '-100*mvolt+10*rand()*mvolt'
@@ -166,6 +166,12 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #        SI_deep.ginp_SI=50* msiemens * cm **-2
         SI_deep.ginp_SI=5* msiemens * cm **-2
 #        SI_deep.ginp_SI=0* msiemens * cm **-2
+        
+        
+    if theta_phase=='good':
+        FS_deep.ginp_FS_good=8.5* msiemens * cm **-2
+        FS_deep.ginp_FS_bad=8.5* msiemens * cm **-2
+        
     Vlow=-80*mV
     SI_deep.Vinp=Vlow
         
@@ -224,8 +230,8 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     S_IBFSdeep=generate_syn(IB_axon,FS_deep,'IsynIB_LIP','',0.01* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
         
     #From deep FS cells
-    S_FSdeepIB=generate_syn(FS_deep,IB_soma,'Isyn','',1* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
-    S_FSdeepSIdeep=generate_syn(FS_deep,SI_deep,'IsynSI_LIP_deep','',0.4* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
+    S_FSdeepIB=generate_syn(FS_deep,IB_soma,'Isyn','',0.5* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
+    S_FSdeepSIdeep=generate_syn(FS_deep,SI_deep,'IsynSI_LIP_deep','',1* msiemens * cm **-2,0.25*ms,6*ms,-80*mV)
     
     #From deep SI cells    
     S_SIdeepIB=generate_syn(SI_deep,IB_bd,'IsynSI_LIP_deep','',5* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
@@ -274,7 +280,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         topdown_in3=Synapses(G_topdown3,SI_deep,on_pre='Vinp=Vhigh')
         topdown_in3.connect(j='i')
         
-        inputs_topdown4=generate_spike_timing(N_SI,beta2freq,0*ms,end_time=10000*ms)
+        inputs_topdown4=generate_spike_timing(N_FS,25*Hz,0*ms,end_time=10000*ms)
         G_topdown4 = SpikeGeneratorGroup(N_FS, inputs_topdown4[:,1], inputs_topdown4[:,0]*second)
         topdown_in4=Synapses(G_topdown4,FS_deep,on_pre='Vinp=Vhigh')
         topdown_in4.connect(j='i')
@@ -390,7 +396,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         topdown_in3=Synapses(G_topdown3,SI_deep,on_pre='Vinp=Vhigh')
         topdown_in3.connect(j='i')
         
-        inputs_topdown4=generate_spike_timing(N_SI,beta2freq,0*ms,end_time=10000*ms)
+        inputs_topdown4=generate_spike_timing(N_SI,25*Hz,0*ms,end_time=10000*ms)
         G_topdown4 = SpikeGeneratorGroup(N_FS, inputs_topdown4[:,1], inputs_topdown4[:,0]*second)
         topdown_in4=Synapses(G_topdown4,FS_deep,on_pre='Vinp=Vhigh')
         topdown_in4.connect(j='i')
@@ -462,7 +468,7 @@ def run_one_simulation(simu,path,index_var):
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
-        input_beta2_FS_SI=True
+        input_beta2_FS_SI=False
         input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
         ginp_SI=0* msiemens * cm **-2
@@ -472,8 +478,8 @@ def run_one_simulation(simu,path,index_var):
         input_mixed=False
         
     if theta_phase=='good':
-#        input_beta2_IB=True
-        input_beta2_IB=False
+        input_beta2_IB=True
+        # input_beta2_IB=False
         ginp_IB=500* msiemens * cm **-2
         ginpSIdeep=500* msiemens * cm **-2
         input_beta2_RS=False
@@ -498,7 +504,7 @@ def run_one_simulation(simu,path,index_var):
     
     print('Network setup')
     all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
-    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,R8,V5,V6,V7,R8,inpmon,inpIBmon=all_monitors
+    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,R8,V5,V6,V7,V8,inpmon,inpIBmon=all_monitors
     
     
     net.add(all_neurons)
@@ -648,10 +654,10 @@ def run_one_simulation(simu,path,index_var):
     plot(R1.t,R1.i+160,'r.',label='RS cells')
     plot(R2.t,R2.i+140,'b.',label='FS cells')
     plot(R3.t,R3.i+120,'g.',label='SOM cells')
-    plot([0.2,runtime/second],[95,95],'k--')
+    plot([0.2,runtime/second],[115,115],'k--')
     plot(R5.t,R5.i+90,'r.')
     plot(R6.t,R6.i+70,'b.')
-    plot([0.2,runtime/second],[45,45],'k--')
+    plot([0.2,runtime/second],[65,65],'k--')
     plot(R4.t,R4.i+40,'m.',label='IB cells')
     plot(R7.t,R7.i+20,'g.')
     plot(R8.t,R8.i,'b.')
@@ -766,7 +772,7 @@ if __name__=='__main__':
 #    all_J_FSg=['-9 * uA * cmeter ** -2','-8 * uA * cmeter ** -2','-7 * uA * cmeter ** -2','-6 * uA * cmeter ** -2','1 * uA * cmeter ** -2','2 * uA * cmeter ** -2','3 * uA * cmeter ** -2','4 * uA * cmeter ** -2']
 #    all_thal=[10* msiemens * cm **-2]
     all_thal=[0* msiemens * cm **-2]
-    all_theta=['bad']
+    all_theta=['good']
     # all_theta=['mixed','mixed','mixed','mixed','mixed']
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
