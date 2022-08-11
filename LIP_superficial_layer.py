@@ -102,7 +102,7 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     
     #### Synapses (taken from FEF visual module).
 
-    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
     S_SIVIP=generate_syn(SI,VIP,'IsynSI_LIP_sup','',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
     
     ##Define gap junctions
