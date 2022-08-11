@@ -46,6 +46,11 @@ Iinp1=sinp*ginp_RS*(V-Vrev_inp) : amp * meter ** -2
     ginp_RS_bad : siemens * meter **-2    
 Iinp2: amp * meter ** -2
 Iinp3: amp * meter ** -2
+
+Iapp2=sinp2*ginp_RS2*(V-Vrev_inp) : amp * meter ** -2
+    dsinp2/dt=-sinp2/taudinp + (1-sinp2)/taurinp*0.5*(1+tanh(Vinp2/10/mV)) : 1
+    dVinp2/dt=1/tauinp*(Vlow-Vinp2) : volt
+    ginp_RS2 : siemens * meter **-2
 '''
 
 

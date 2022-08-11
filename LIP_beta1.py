@@ -10,6 +10,7 @@ from scipy import signal
 from cells.RS_LIP import *
 from cells.FS_LIP import *
 from cells.SI_LIP import *
+from cells.VIP_LIP import *
 from cells.IB_soma_LIP import *
 from cells.IB_axon_LIP import *
 from cells.IB_apical_dendrite_LIP import *
@@ -27,6 +28,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     
     
     all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(kainate,version,Nf)
+    #RS, FS, SI, VIP=all_neurons
     RS, FS, SI=all_neurons
     #Single column network
     
@@ -102,7 +104,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     
     
     S_SIIB=Synapses(SI,IB_ad,model='IsynSI_LIP_sup'+eq_syn,method='exact')
-    S_SIIB.connect()
+    S_SIIB.connect('i//10==j//10')
     S_SIIB.g_i=0.4* msiemens * cm **-2*int(version=='Alex')+(4*msiemens * cm **-2)*int(version=='Mark')+(0.2*msiemens * cm **-2)*int(version=='Mark/cell')
     #S_SIIB.g_i=4*msiemens * cm **-2
     S_SIIB.taur_i=0.25*ms
@@ -110,7 +112,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     S_SIIB.V_i=-80*mV
     
     S_IBFS=Synapses(IB_axon,FS,model='IsynIB_LIP'+eq_syn,method='exact')
-    S_IBFS.connect()
+    S_IBFS.connect('i//10==j//10')
     S_IBFS.g_i=0.2* msiemens * cm **-2*int(version=='Alex')+(0.045*msiemens * cm **-2)*int(version=='Mark')+(0.00225*msiemens * cm **-2)*int(version=='Mark/cell')
     S_IBFS.g_i=0.08* msiemens * cm **-2
 #    S_IBFS.g_i=0.1* msiemens * cm **-2
@@ -119,12 +121,20 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     S_IBFS.V_i=0*mV
     
     S_IBSI=Synapses(IB_axon,SI,model='IsynIB_LIP'+eq_syn,method='exact')
-    S_IBSI.connect()
+    S_IBSI.connect('i//10==j//10')
     S_IBSI.g_i=0.045* msiemens * cm **-2*int(version=='Alex')+(0.04*msiemens * cm **-2)*int(version=='Mark')+(0.002*msiemens * cm **-2)*int(version=='Mark/cell')
 #    S_IBSI.g_i=0.08* msiemens * cm **-2
     S_IBSI.taur_i=1.25*ms
     S_IBSI.taud_i=50*ms
     S_IBSI.V_i=0*mV
+    
+#     S_IBVIP=Synapses(IB_axon,VIP,model='IsynIB_LIP'+eq_syn,method='exact')
+#     S_IBVIP.connect('i//10==j//10')
+# #    S_IBVIP.g_i=0.45* msiemens * cm **-2*int(version=='Alex')+(0.4*msiemens * cm **-2)*int(version=='Mark')+(0.02*msiemens * cm **-2)*int(version=='Mark/cell')
+#     S_IBVIP.g_i=0* msiemens * cm **-2
+#     S_IBVIP.taur_i=1.25*ms
+#     S_IBVIP.taud_i=50*ms
+#     S_IBVIP.V_i=0*mV
     
     S_IBIB=None
     if version=='Alex': #NMDA synapses from IB to IB also exist in Mark's model of beta1
@@ -169,18 +179,18 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     gap_IBIB.g_i=0.0025* msiemens * cm **-2*int(version=='Alex')+(0.002*msiemens * cm **-2)*int(version=='Mark')
 
     #Define monitors :
-    V4=StateMonitor(IB_soma,'V',record=True)
-    R4=SpikeMonitor(IB_soma,record=True)
-    I4s=StateMonitor(IB_soma,'Isyn',record=True)
-    I4a=StateMonitor(IB_axon,'Isyn',record=True)
-    I4ad=StateMonitor(IB_ad,'Isyn',record=True)
-    I4bd=StateMonitor(IB_bd,'Isyn',record=True)
+    V5=StateMonitor(IB_soma,'V',record=True)
+    R5=SpikeMonitor(IB_soma,record=True)
+    I5s=StateMonitor(IB_soma,'Isyn',record=True)
+    I5a=StateMonitor(IB_axon,'Isyn',record=True)
+    I5ad=StateMonitor(IB_ad,'Isyn',record=True)
+    I5bd=StateMonitor(IB_bd,'Isyn',record=True)
 
     new_neurons=IB_soma,IB_axon,IB_bd,IB_ad
-    new_synapses=S_RSIB_AMPA,S_RSIB_NMDA, S_SIIB, S_IBFS, S_IBSI, S_IBIB
+    new_synapses=S_RSIB_AMPA,S_RSIB_NMDA, S_SIIB, S_IBFS, S_IBSI, S_IBIB, #S_IBVIP
     new_synapses=tuple([y for y in new_synapses if y])
     new_gap_junctions=gapIB_SomaAd,gapIB_SomaBd,gapIB_SomaAxon,gapIB_AdSoma,gapIB_BdSoma,gapIB_AxonSoma,gap_IBIB
-    new_monitors=V4,R4,I4s,I4a,I4ad,I4bd
+    new_monitors=V5,R5,I5s,I5a,I5ad,I5bd
     
     all_neurons=all_neurons+new_neurons
     all_synapses=all_synapses+new_synapses
@@ -208,11 +218,11 @@ if __name__=='__main__' :
     random_init_IB=False #All figures except 1e and 2g
     
     NN=1 #multiplicative factor on the number of neurons
-    N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
+    N_RS,N_FS,N_SI,N_VIP,N_IB= NN*80,NN*20,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
     
     net = Network()
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
-    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
+    V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,I5s,I5a,I5ad,I5bd=all_monitors
 
     net.add(all_neurons)
     net.add(all_synapses)
@@ -302,10 +312,11 @@ if __name__=='__main__' :
     #title('IB cell')
     
     figure()
-    plot(R1.t,R1.i+60,'r.',label='RS cells')
-    plot(R2.t,R2.i+40,'b.',label='FS cells')
-    plot(R3.t,R3.i+20,'g.',label='SI cells')
-    plot(R4.t,R4.i,'y.',label='IB cells')
+    plot(R1.t,R1.i+80,'r.',label='RS cells')
+    plot(R2.t,R2.i+60,'b.',label='FS cells')
+    plot(R3.t,R3.i+40,'g.',label='SI cells')
+    plot(R4.t,R4.i+20,'k.',label='VIP cells')
+    plot(R5.t,R5.i,'y.',label='IB cells')
     xlim(0,runtime/second)
     legend(loc='upper left')
     #
@@ -313,51 +324,65 @@ if __name__=='__main__' :
     LFP_V_RS=1/N_RS*sum(V1.V,axis=0)[min_t:]
     LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
     LFP_V_SI=1/N_SI*sum(V3.V,axis=0)[min_t:]
-    LFP_V_IB=1/N_IB*sum(V4.V,axis=0)[min_t:]
+    LFP_V_VIP=1/N_VIP*sum(V4.V,axis=0)[min_t:]
+    LFP_V_IB=1/N_IB*sum(V5.V,axis=0)[min_t:]
     
     f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_SI=signal.periodogram(LFP_V_SI, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_VIP=signal.periodogram(LFP_V_VIP, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_IB=signal.periodogram(LFP_V_IB, 100000,'flattop', scaling='spectrum')
     
     figure()
-    subplot(421)
+    subplot(521)
     plot((V1.t/second)[min_t:],LFP_V_RS)
     ylabel('LFP')
     title('RS cell')
-    subplot(423)
+    subplot(523)
     plot((V1.t/second)[min_t:],LFP_V_FS)
     ylabel('LFP')
     title('FS cell')
-    subplot(425)
+    subplot(525)
     plot((V1.t/second)[min_t:],LFP_V_SI)
     ylabel('LFP')
     title('SI cell')
-    subplot(427)
+    subplot(527)
+    plot((V1.t/second)[min_t:],LFP_V_VIP)
+    xlabel('Time (s)')
+    ylabel('LFP')
+    title('VIP cell')
+    subplot(529)
     plot((V1.t/second)[min_t:],LFP_V_IB)
     xlabel('Time (s)')
     ylabel('LFP')
     title('IB cell')
     
-    subplot(422)
+    subplot(522)
     plot(f,Spectrum_LFP_V_RS)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,50)
     title('RS cell')
-    subplot(424)
+    subplot(524)
     plot(f,Spectrum_LFP_V_FS)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,50)
     title('FS cell')
-    subplot(426)
+    subplot(526)
     plot(f,Spectrum_LFP_V_SI)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,50)
     title('SI cell')
-    subplot(428)
+    subplot(528)
+    plot(f,Spectrum_LFP_V_VIP)
+    xlabel('Frequency (Hz)')
+    ylabel('Spectrum')
+    yticks([],[])
+    xlim(0,50)
+    title('VIP cell')
+    subplot(5,2,10)
     plot(f,Spectrum_LFP_V_IB)
     xlabel('Frequency (Hz)')
     ylabel('Spectrum')
@@ -398,7 +423,7 @@ if __name__=='__main__' :
     #LFP_I_RS=1/N_RS*sum(I1.Isyn,axis=0)[min_t:]
     #LFP_I_FS=1/N_FS*sum(I2.Isyn,axis=0)[min_t:]
     #LFP_I_SI=1/N_SI*sum(I3.Isyn,axis=0)[min_t:]
-    #LFP_I_IB=1/N_IB*(sum(I4s.Isyn,axis=0)[min_t:]+sum(I4a.Isyn,axis=0)[min_t:]+sum(I4ad.Isyn,axis=0)[min_t:]+sum(I4bd.Isyn,axis=0)[min_t:])
+    #LFP_I_IB=1/N_IB*(sum(I5s.Isyn,axis=0)[min_t:]+sum(I5a.Isyn,axis=0)[min_t:]+sum(I5ad.Isyn,axis=0)[min_t:]+sum(I5bd.Isyn,axis=0)[min_t:])
     #
     #f,Spectrum_LFP_I_RS=signal.periodogram(LFP_I_RS, 100000,'flattop', scaling='spectrum')
     #f,Spectrum_LFP_I_FS=signal.periodogram(LFP_I_FS, 100000,'flattop', scaling='spectrum')
@@ -407,43 +432,43 @@ if __name__=='__main__' :
     #
     #
     #figure()
-    #subplot(421)
+    #subplot(521)
     #plot((V1.t/second)[min_t:],LFP_I_RS)
     #ylabel('LFP')
     #title('RS cell')
-    #subplot(423)
+    #subplot(523)
     #plot((V1.t/second)[min_t:],LFP_I_FS)
     #ylabel('LFP')
     #title('FS cell')
-    #subplot(425)
+    #subplot(525)
     #plot((V1.t/second)[min_t:],LFP_I_SI)
     #ylabel('LFP')
     #title('SI cell')
-    #subplot(427)
+    #subplot(527)
     #plot((V1.t/second)[min_t:],LFP_I_IB)
     #xlabel('Time (s)')
     #ylabel('LFP')
     #title('IB cell')
     #
-    #subplot(422)
+    #subplot(522)
     #plot(f,Spectrum_LFP_I_RS)
     #ylabel('Spectrum')
     #yticks([],[])
     #xlim(0,50)
     #title('RS cell')
-    #subplot(424)
+    #subplot(524)
     #plot(f,Spectrum_LFP_I_FS)
     #ylabel('Spectrum')
     #yticks([],[])
     #xlim(0,50)
     #title('FS cell')
-    #subplot(426)
+    #subplot(526)
     #plot(f,Spectrum_LFP_I_SI)
     #ylabel('Spectrum')
     #yticks([],[])
     #xlim(0,50)
     #title('SI cell')
-    #subplot(428)
+    #subplot(528)
     #plot(f,Spectrum_LFP_I_IB)
     #xlabel('Frequency (Hz)')
     #ylabel('Spectrum')

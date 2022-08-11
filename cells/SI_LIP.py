@@ -8,10 +8,11 @@ defaultclock.dt = 0.01*ms
 eq_SI_LIP='''
 dV/dt=1/C_SI*(-J-Isyn-Igap-Iran-Iapp-IL-INa-IK-IAR) : volt
 J : amp * meter ** -2
-Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
+Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynVIP_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
 IsynRS_LIP_sup : amp * meter ** -2
 IsynFS_LIP_sup : amp * meter ** -2
 IsynSI_LIP_sup : amp * meter ** -2
+IsynVIP_LIP_sup : amp * meter ** -2
 IsynRS_LIP_gran : amp * meter ** -2
 IsynFS_LIP_gran : amp * meter ** -2
 IsynIB_LIP : amp * meter ** -2
@@ -40,6 +41,11 @@ Iapp=sinp*ginp_SI*(V-Vrev_inp) : amp * meter ** -2
     dsinp/dt=-sinp/taudinp2 + (1-sinp)/taurinp2*0.5*(1+tanh(Vinp/10/mV)) : 1
     dVinp/dt=1/tauinp2*(Vlow-Vinp) : volt
     ginp_SI : siemens * meter **-2
+    
+Iapp2=sinp2*ginp_SI2*(V-Vrev_inp) : amp * meter ** -2
+    dsinp2/dt=-sinp2/taudinp + (1-sinp2)/taurinp*0.5*(1+tanh(Vinp2/10/mV)) : 1
+    dVinp2/dt=1/tauinp*(Vlow-Vinp2) : volt
+    ginp_SI2 : siemens * meter **-2    
 '''
 
 

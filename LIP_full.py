@@ -15,6 +15,7 @@ from scipy import signal
 from cells.RS_LIP import *
 from cells.FS_LIP import *
 from cells.SI_LIP import *
+from cells.VIP_LIP import *
 from cells.IB_soma_LIP import *
 from cells.IB_axon_LIP import *
 from cells.IB_apical_dendrite_LIP import *
@@ -62,7 +63,7 @@ def zeros_ones_monitor(spikemon,record_dt,runtime):
         zeros_ones[int(time/record_dt)]+=1
     return zeros_ones
     
-def make_full_network(syn_cond,J,thal,theta_phase):
+def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     
 #    print(syn_cond,J,thal,theta_phase)    
     
@@ -79,8 +80,8 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     kainate='low'
     
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
-    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd=all_monitors
-    RS, FS, SI, IB_soma,IB_axon,IB_bd,IB_ad =all_neurons
+    V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,I5s,I5a,I5ad,I5IBbd=all_monitors
+    RS, FS, SI, VIP, IB_soma, IB_axon, IB_bd, IB_ad =all_neurons
    
     if theta_phase=='bad':
         input_beta2_IB=False
@@ -91,6 +92,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         SI.ginp_SI=0* msiemens * cm **-2
         thal_cond=2* msiemens * cm **-2
         input_mixed=False
+        target_on=True
         
         
     if theta_phase=='good':
@@ -104,6 +106,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #        thal_cond=thal*2754.660086037123/12782.0904181147
 #        thal_cond=thal*2754.660086037123/139.46773954954165
         input_mixed=False
+        target_on=True
         
     if theta_phase=='mixed':
         input_mixed=True
@@ -114,6 +117,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         input_beta2_FS_SI=False
         input_thalamus_gran=False
         thal_cond=thal
+        target_on=True
         
 #    print(input_mixed,input_beta2_IB,input_beta2_RS,input_beta2_FS_SI,input_thalamus_gran)
         
@@ -192,23 +196,23 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     #From E (granular layer) cells
     #S_EgranFS=generate_syn(E_gran,FS,'IsynEgran','',0.2*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
     #S_EgranFS=generate_syn(E_gran,FS,'IsynEgran','',0.1*msiemens * cm **-2,0.125*ms,1*ms,0*mV)
-    S_EgranFS=generate_syn(E_gran,FS,'IsynRS_LIP_gran','',gRSgFSs,0.125*ms,1*ms,0*mV)
+    S_EgranFS=generate_syn(E_gran,FS,'IsynRS_LIP_gran','i//10==j//10',gRSgFSs,0.125*ms,1*ms,0*mV)
     #S_EgranEgran=generate_syn(E_gran,E_gran,'IsynEgran','',0.4*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
-    S_EgranEgran=generate_syn(E_gran,E_gran,'IsynRS_LIP_gran','',gRSgRSg,0.125*ms,1*ms,0*mV)
+    S_EgranEgran=generate_syn(E_gran,E_gran,'IsynRS_LIP_gran','i//10==j//10',gRSgRSg,0.125*ms,1*ms,0*mV)
     #S_EgranFSgran=generate_syn(E_gran,FS_gran,'IsynEgran','',0.2*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
-    S_EgranFSgran=generate_syn(E_gran,FS_gran,'IsynRS_LIP_gran','',gRSgFSg,0.125*ms,1*ms,0*mV)
+    S_EgranFSgran=generate_syn(E_gran,FS_gran,'IsynRS_LIP_gran','i//10==j//10',gRSgFSg,0.125*ms,1*ms,0*mV)
     #S_EgranRS=generate_syn(E_gran,RS,'IsynEgran','',0.2*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
     #S_EgranRS=generate_syn(E_gran,RS,'IsynEgran','',1*msiemens * cm **-2,0.125*ms,1*ms,0*mV)
-    S_EgranRS=generate_syn(E_gran,RS,'IsynRS_LIP_gran','',gRSgRSs,0.125*ms,1*ms,0*mV)
+    S_EgranRS=generate_syn(E_gran,RS,'IsynRS_LIP_gran','i//10==j//10',gRSgRSs,0.125*ms,1*ms,0*mV)
     
-    S_EgranIB=generate_syn(E_gran,IB_ad,'IsynRS_LIP_gran','',0.212*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
+    S_EgranIB=generate_syn(E_gran,IB_ad,'IsynRS_LIP_gran','i//10==j//10',0.212*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
     
     #From FS (granular layer) cells, normal timescale
     #S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFSgran','',1* usiemens * cm **-2*FLee,0.25*ms,5*ms,-80*mV)
-    S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFS_LIP_gran','',gFSgRSg,0.25*ms,5*ms,-80*mV)
-    S_FSgranFSgran=generate_syn(FS_gran,FS_gran,'IsynFS_LIP_gran','',gFSgFSg,0.25*ms,5*ms,-75*mV)
+    S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFS_LIP_gran','i//10==j//10',gFSgRSg,0.25*ms,5*ms,-80*mV)
+    S_FSgranFSgran=generate_syn(FS_gran,FS_gran,'IsynFS_LIP_gran','i//10==j//10',gFSgFSg,0.25*ms,5*ms,-75*mV)
     #S_FSgranRS=generate_syn(FS_gran,RS,'IsynFSgran','',0.02* usiemens * cm **-2*FLee,0.25*ms,5*ms,-80*mV)
-    S_FSgranRS=generate_syn(FS_gran,RS,'IsynFS_LIP_gran','',gFSgRSs,0.25*ms,5*ms,-80*mV)
+    S_FSgranRS=generate_syn(FS_gran,RS,'IsynFS_LIP_gran','i//10==j//10',gFSgRSs,0.25*ms,5*ms,-80*mV)
     #S_FSgranRS=generate_syn(FS_gran,RS,'IsynFSgran','',0* msiemens * cm **-2,0.25*ms,5*ms,-80*mV)
 
 #    #From FS (granular layer) cells, beta timescale
@@ -219,13 +223,13 @@ def make_full_network(syn_cond,J,thal,theta_phase):
     #From IB cells
     #S_IBSIdeep=generate_syn(IB_axon,SI_deep,'IsynIB','',0.12* usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
 #    S_IBSIdeep=generate_syn(IB_axon,SI_deep,'IsynIB','',0.2* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
-    S_IBSIdeep=generate_syn(IB_axon,SI_deep,'IsynIB_LIP','',0.01* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
+    S_IBSIdeep=generate_syn(IB_axon,SI_deep,'IsynIB_LIP','i//10==j//10',0.01* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
         
     
     #From deep SI cells    
-    S_SIdeepIB=generate_syn(SI_deep,IB_bd,'IsynSI_LIP_deep','',10* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
+    S_SIdeepIB=generate_syn(SI_deep,IB_bd,'IsynSI_LIP_deep','i//10==j//10',10* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
     #S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSIdeep','',0.4* usiemens * cm **-2*FLee,0.25*ms,20*ms,-80*mV)
-    S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSI_LIP_deep','',gSIdFSg,0.25*ms,20*ms,-80*mV)
+    S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSI_LIP_deep','i//10==j//10',gSIdFSg,0.25*ms,20*ms,-80*mV)
     
     
     def generate_spike_timing(N,f,start_time,end_time=runtime):
@@ -306,6 +310,43 @@ def make_full_network(syn_cond,J,thal,theta_phase):
         bottomup_in2 = Synapses(Poisson_input2,E_gran, on_pre='Vinp=Vhigh')
         bottomup_in2.connect(j='i')
     #    print(bottomup_in,bottomup_in2)
+        
+    if target_on:
+        # if theta_phase=='good':
+        #     fFEF=25*Hz
+        # else :
+        #     fFEF=0*Hz
+            
+        # gamma_background=generate_spike_timing(N_FS,fFEF,0*ms,end_time=3000*ms)
+        
+        # if theta_phase=='mixed':
+        #     t0=0*ms
+        #     t1=125*ms
+        #     gamma_background=generate_spike_timing(N_FS,fFEF,t0,end_time=t1)
+        #     while t0+125*ms<runtime:
+        #         fFEF=25*Hz*int(fFEF==0*Hz)+0*Hz*int(fFEF==25*Hz)
+        #         t0,t1=t0+125*ms,t1+125*ms
+        #         gamma_background=vstack((gamma_background,generate_spike_timing(N_FS,fLIP,t0,end_time=t1)))
+            
+        gamma_target=generate_spike_timing(10,50*Hz,target_time,end_time=target_time+100*ms)
+        
+        # Poisson_background = SpikeGeneratorGroup(N_FS, gamma_background[:,1], gamma_background[:,0]*second)
+        Poisson_target = SpikeGeneratorGroup(10, gamma_target[:,1], gamma_target[:,0]*second)
+        
+        # S_in_bg_RS=Synapses(Poisson_background,RS,on_pre='Vinp=Vhigh')
+        # S_in_bg_RS.connect(j='i')
+        # S_in_bg_SI=Synapses(Poisson_background,SI,on_pre='Vinp=Vhigh')
+        # S_in_bg_SI.connect(j='i')
+        # S_in_bg_VIP=Synapses(Poisson_background,VIP,on_pre='Vinp=Vhigh')
+        # S_in_bg_VIP.connect(j='i')
+        
+        S_in_target_VIP=Synapses(Poisson_target,VIP,on_pre='Vinp2=Vhigh')
+        S_in_target_VIP.connect(j='i')
+        S_in_target_SI=Synapses(Poisson_target,SI,on_pre='Vinp2=Vhigh')
+        S_in_target_SI.connect(j='i')
+        SI.ginp_SI2=2.5* msiemens * cm **-2
+        VIP.ginp_VIP2=2.5* msiemens * cm **-2
+        RS.ginp_RS2=2.5* msiemens * cm **-2
     
     if input_mixed:
         E_gran.ginp_RS_good=thal_cond
@@ -397,13 +438,13 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 #    print(Poisson_input2 in g_inputs)
     
     #Define monitors and run network :
-    R5=SpikeMonitor(E_gran,record=True)
-    R6=SpikeMonitor(FS_gran,record=True)
-    R7=SpikeMonitor(SI_deep,record=True)
+    R6=SpikeMonitor(E_gran,record=True)
+    R7=SpikeMonitor(FS_gran,record=True)
+    R8=SpikeMonitor(SI_deep,record=True)
     
-    V5=StateMonitor(E_gran,'V',record=True)
-    V6=StateMonitor(FS_gran,'V',record=True)
-    V7=StateMonitor(SI_deep,'V',record=True)
+    V6=StateMonitor(E_gran,'V',record=True)
+    V7=StateMonitor(FS_gran,'V',record=True)
+    V8=StateMonitor(SI_deep,'V',record=True)
     
 #    inpmon=StateMonitor(E_gran,'Iinp1',record=True)
     inpmon=StateMonitor(E_gran,'sinp',record=True)
@@ -412,7 +453,7 @@ def make_full_network(syn_cond,J,thal,theta_phase):
 
     all_neurons=all_neurons+(E_gran,FS_gran,SI_deep)+tuple(g_inputs)
     all_synapses=all_synapses+(S_EgranFS,S_EgranEgran,S_EgranFSgran,S_EgranRS,S_EgranIB,S_FSgranEgran,S_FSgranFSgran,S_FSgranRS,S_IBSIdeep,S_SIdeepIB,S_SIdeepFSgran)+tuple(syn_inputs)
-    all_monitors=all_monitors+(R5,R6,R7,V5,V6,V7,inpmon,inpIBmon)
+    all_monitors=all_monitors+(R6,R7,R8,V6,V7,V8,inpmon,inpIBmon)
     return all_neurons, all_synapses, all_gap_junctions, all_monitors
 
 
@@ -437,7 +478,7 @@ def run_one_simulation(simu,path,index_var):
     NN=1 #multiplicative factor on the number of neurons
     N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
     
-    syn_cond,J,thal,theta_phase,index=simu
+    syn_cond,J,thal,theta_phase,index,target_time=simu
     print('Simulation '+str(index))
     
     if theta_phase=='bad':
@@ -480,14 +521,14 @@ def run_one_simulation(simu,path,index_var):
     
     print('Network setup')
     all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
-    V1,V2,V3,R1,R2,R3,I1,I2,I3,V4,R4,I4s,I4a,I4ad,I4bd,R5,R6,R7,V5,V6,V7,inpmon,inpIBmon=all_monitors
+    V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,Is,I5a,I5ad,I5bd,R6,R7,R8,V6,V7,V8,inpmon,inpIBmon=all_monitors
     
     
     net.add(all_neurons)
     net.add(all_synapses)
     net.add(all_gap_junctions)
 #    net.add(all_monitors)
-    net.add((V1,R1,R2,R3,R4,R5,R6,R7,inpmon,inpIBmon))
+    net.add((V1,R1,R2,R3,R4,R5,R6,R7,R8,inpmon,inpIBmon))
     
 #    taurinp=0.1*ms
 #    taudinp=0.5*ms    
@@ -504,13 +545,14 @@ def run_one_simulation(simu,path,index_var):
     net.run(runtime,report='text',report_period=300*second)
     
     figure()
-    plot(R1.t,R1.i+140,'r.',label='RS cells')
-    plot(R2.t,R2.i+120,'m.',label='FS cells')
-    plot(R3.t,R3.i+100,'y.',label='SI cells')
-    plot(R5.t,R5.i+70,'g.',label='Granular RS')
-    plot(R6.t,R6.i+50,'c.',label='Granular FS')
-    plot(R4.t,R4.i+20,'b.',label='IB cells')
-    plot(R7.t,R7.i,'k.',label='Deep SI')
+    plot(R1.t,R1.i+160,'r.',label='RS cells')
+    plot(R2.t,R2.i+140,'m.',label='FS cells')
+    plot(R3.t,R3.i+120,'y.',label='SI cells')
+    plot(R4.t,R4.i+100,'.',label='VIP cells',color='orange')
+    plot(R6.t,R6.i+70,'g.',label='Granular RS')
+    plot(R7.t,R7.i+50,'c.',label='Granular FS')
+    plot(R5.t,R5.i+20,'b.',label='IB cells')
+    plot(R8.t,R8.i,'k.',label='Deep SI')
     xlim(0,runtime/second)
     legend(loc='upper left',fontsize=12)
     xticks(fontsize=12)
@@ -538,10 +580,10 @@ def run_one_simulation(simu,path,index_var):
     LFP_V_RS=1/N_RS*sum(V1.V,axis=0)[min_t:]
 #    LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
 #    LFP_V_SI=1/N_SI62.903225806451616*sum(V3.V,axis=0)[min_t:]
-#    LFP_V_IB=1/N_IB*sum(V4.V,axis=0)[min_t:]
+#    LFP_V_IB=1/N_IB*sum(V5.V,axis=0)[min_t:]
 #    LFP_V_RSg=1/N_FS*sum(V5.V,axis=0)[min_t:]
-#    LFP_V_FSg=1/N_FS*sum(V6.V,axis=0)[min_t:]
-#    LFP_V_SId=1/N_SI*sum(V7.V,axis=0)[min_t:]
+#    LFP_V_FSg=1/N_FS*sum(V7.V,axis=0)[min_t:]
+#    LFP_V_SId=1/N_SI*sum(V8.V,axis=0)[min_t:]
     
 #    f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='density')
@@ -603,13 +645,14 @@ def run_one_simulation(simu,path,index_var):
 #    tight_layout()
     
     figure()
-    plot(R1.t,R1.i+140,'r.',label='RS cells')
-    plot(R2.t,R2.i+120,'b.',label='FS cells')
-    plot(R3.t,R3.i+100,'g.',label='SI cells')
-    plot(R5.t,R5.i+70,'.',label='Granular RS',color='C1')
-    plot(R6.t,R6.i+50,'c.',label='Granular FS')
-    plot(R4.t,R4.i+20,'m.',label='IB cells')
-    plot(R7.t,R7.i,'.',label='Deep SI',color='lime')
+    plot(R1.t,R1.i+160,'r.',label='RS cells')
+    plot(R2.t,R2.i+140,'b.',label='FS cells')
+    plot(R3.t,R3.i+120,'g.',label='SI cells')
+    plot(R4.t,R4.i+100,'y.',label='VIP cells')
+    plot(R6.t,R6.i+70,'.',label='Granular RS',color='C1')
+    plot(R7.t,R7.i+50,'c.',label='Granular FS')
+    plot(R5.t,R5.i+20,'m.',label='IB cells')
+    plot(R8.t,R8.i,'.',label='Deep SI',color='lime')
     xlim(0,runtime/second)
     ylim(0,220)
     legend(loc='upper left')
@@ -633,15 +676,16 @@ def run_one_simulation(simu,path,index_var):
     xlim(0,50)
     
     figure()
-    plot(R1.t,R1.i+140,'r.',label='RS cells')
-    plot(R2.t,R2.i+120,'b.',label='FS cells')
-    plot(R3.t,R3.i+100,'g.',label='SOM cells')
+    plot(R1.t,R1.i+160,'r.',label='RS cells')
+    plot(R2.t,R2.i+140,'b.',label='FS cells')
+    plot(R3.t,R3.i+120,'g.',label='SOM cells')
+    plot(R4.t,R4.i+100,'k.',label='VIP cells')
     plot([0.2,runtime/second],[95,95],'k--')
-    plot(R5.t,R5.i+70,'r.')
-    plot(R6.t,R6.i+50,'b.')
+    plot(R6.t,R6.i+70,'r.')
+    plot(R7.t,R7.i+50,'b.')
     plot([0.2,runtime/second],[45,45],'k--')
-    plot(R4.t,R4.i+20,'m.',label='IB cells')
-    plot(R7.t,R7.i,'g.')
+    plot(R5.t,R5.i+20,'m.',label='IB cells')
+    plot(R8.t,R8.i,'g.')
     xlim(0.2,runtime/second)
     ylim(0,220)
     xticks(fontsize=12)
@@ -690,7 +734,7 @@ def run_one_simulation(simu,path,index_var):
 #    LFP_V_RS=1/N_RS*sum(V1.V,axis=0)[min_t:]
 #    LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
 #    LFP_V_SI=1/N_SI*sum(V3.V,axis=0)[min_t:]
-#    LFP_V_IB=1/N_IB*sum(V4.V,axis=0)[min_t:]
+#    LFP_V_IB=1/N_IB*sum(V5.V,axis=0)[min_t:]
 #    
 #    f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
 #    f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
@@ -754,10 +798,11 @@ def run_one_simulation(simu,path,index_var):
     save_raster('LIP_RS',R1.i,R1.t,new_path)
     save_raster('LIP_FS',R2.i,R2.t,new_path)
     save_raster('LIP_SI',R3.i,R3.t,new_path)
-    save_raster('LIP_RS_gran',R5.i,R5.t,new_path)
-    save_raster('LIP_FS_gran',R6.i,R6.t,new_path)
-    save_raster('LIP_IB',R4.i,R4.t,new_path)
-    save_raster('LIP_SI_deep',R7.i,R7.t,new_path)
+    save_raster('LIP_VIP',R4.i,R4.t,new_path)
+    save_raster('LIP_RS_gran',R6.i,R6.t,new_path)
+    save_raster('LIP_FS_gran',R7.i,R7.t,new_path)
+    save_raster('LIP_IB',R5.i,R5.t,new_path)
+    save_raster('LIP_SI_deep',R8.i,R8.t,new_path)
 
     
 if __name__=='__main__':
@@ -796,6 +841,8 @@ if __name__=='__main__':
     all_theta=['good']
 #    all_theta=['mixed','mixed','mixed','mixed','mixed']
     
+    all_target_time=800*ms
+    
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]
     #all_FSgRSg=[1* msiemens * cm **-2]
@@ -817,7 +864,7 @@ if __name__=='__main__':
     path="./results_"+str(datetime.datetime.now())
     os.mkdir(path)
         
-    all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta))
+    all_sim=list(product(all_syn_cond,all_J,all_thal,all_theta,all_target_time))
     index_var=[-1]
     
     all_sim=[list(all_sim[i])+[i] for i in range(len(all_sim))]
