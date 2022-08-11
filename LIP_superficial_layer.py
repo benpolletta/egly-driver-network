@@ -8,13 +8,14 @@ Created on Mon Dec  2 14:28:44 2019
 
 from brian2 import *
 from scipy import signal
-from model_files.cells.RS_LIP import *
-from model_files.cells.FS_LIP import *
-from model_files.cells.SI_LIP import *
-from model_files.cells.IB_soma_LIP import *
-from model_files.cells.IB_axon_LIP import *
-from model_files.cells.IB_apical_dendrite_LIP import *
-from model_files.cells.IB_basal_dendrite_LIP import *
+from cells.RS_LIP import *
+from cells.FS_LIP import *
+from cells.SI_LIP import *
+from cells.VIP_LIP import *
+from cells.IB_soma_LIP import *
+from cells.IB_axon_LIP import *
+from cells.IB_apical_dendrite_LIP import *
+from cells.IB_basal_dendrite_LIP import *
 
 
 def create_superficial_layer(t_SI,t_FS,Nf=1):
@@ -27,7 +28,7 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     
     
     ##Define neuron groups
-    N_RS,N_FS,N_SI,N_IB= Nf*80,Nf*20,Nf*20,Nf*20 #Number of neurons of RE, TC, and HTC type
+    N_RS,N_FS,N_SI,N_VIP= Nf*80,Nf*20,Nf*20,Nf*20 #Number of neurons of RE, TC, and HTC type
     
     #RS cells
     RS=NeuronGroup(N_RS,eq_RS_LIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
@@ -52,6 +53,10 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     SI.mAR = '0.02+0.04*rand()'
     SI.J='35* uA * cmeter ** -2' 
     
+    VIP=NeuronGroup(N_VIP,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    VIP.V = '-90*mvolt+10*rand()*mvolt'
+    VIP.Iapp='3 * uA * cmeter ** -2' #article=code=35
+    
     ##Define synapses
     eq_syn='''_post=s_i*g_i*(V_post-V_i) : amp * meter ** -2 (summed)
         ds_i/dt=-s_i/taud_i+(1-s_i)/taur_i*0.5*(1+tanh(V_pre/10/mV)) : 1
@@ -61,64 +66,44 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
         taur_i : second
     '''
     
+    def generate_syn(source,target,syntype,connection_pattern,g_i,taur_i,taud_i,V_i):
+        S=Synapses(source,target,model=syntype+eq_syn,method='exact')
+        if connection_pattern=='':
+            S.connect()
+        else :
+            S.connect(condition=connection_pattern, skip_if_invalid=True)
+        S.g_i=g_i
+        S.taur_i=taur_i
+        S.taud_i=taud_i
+        S.V_i=V_i  
+        return S
+    
     S_RSRS=None
     
-    S_RSFS=Synapses(RS,FS,model='IsynRS_LIP_sup'+eq_syn,method='exact')
-    S_RSFS.connect()
-    S_RSFS.g_i=1/40* msiemens * cm **-2
-    S_RSFS.taur_i=0.125*ms
-    S_RSFS.taud_i=1*ms
-    S_RSFS.V_i=0*mV
+    rsfs_g_i=1/40* msiemens * cm **-2
+    rssi_g_i=0.225* msiemens * cm **-2
+    fsrs_g_i=6.25* msiemens * cm **-2
+    fsfs_g_i=2* msiemens * cm **-2
+    fssi_g_i=0.4* msiemens * cm **-2
+    sirs_g_i=2* msiemens * cm **-2
+    sifs_g_i=0.2* msiemens * cm **-2
+    sisi_g_i=7* msiemens * cm **-2
+
+    S_RSFS=generate_syn(RS,FS,'IsynRS_LIP_sup','i//10==j//10',rsfs_g_i,0.125*ms,1*ms,0*mV)
+    S_RSSI=generate_syn(RS,SI,'IsynRS_LIP_sup','i//10==j//10',rssi_g_i,1.25*ms,1*ms,0*mV)
     
-    S_RSSI=Synapses(RS,SI,model='IsynRS_LIP_sup'+eq_syn,method='exact')
-    S_RSSI.connect()
-    S_RSSI.g_i=0.225* msiemens * cm **-2
-    S_RSSI.taur_i=1.25*ms
-    S_RSSI.taud_i=1*ms
-    S_RSSI.V_i=0*mV
+    S_FSRS=generate_syn(FS,RS,'IsynFS_LIP_sup','i//10==j//10',fsrs_g_i,0.25*ms,t_FS,-80*mV)
+    S_FSFS=generate_syn(FS,FS,'IsynFS_LIP_sup','j==i',fsfs_g_i,0.25*ms,t_FS,-75*mV)
+    S_FSSI=generate_syn(FS,SI,'IsynFS_LIP_sup','i//10==j//10',fssi_g_i,0.25*ms,t_FS,-80*mV)
     
+    S_SIRS=generate_syn(SI,RS,'IsynSI_LIP_sup','i//10==j//10',sirs_g_i,0.25*ms,t_SI,-80*mV)
+    S_SIFS=generate_syn(SI,FS,'IsynSI_LIP_sup','i//10==j//10',sifs_g_i,0.25*ms,t_SI,-80*mV)
+    S_SISI=generate_syn(SI,SI,'IsynSI_LIP_sup','j==i',sisi_g_i,0.25*ms,t_SI,-80*mV)
     
-    S_FSRS=Synapses(FS,RS,model='IsynFS_LIP_sup'+eq_syn,method='exact')
-    S_FSRS.connect()
-    S_FSRS.g_i=6.25* msiemens * cm **-2
-    S_FSRS.taur_i=0.25*ms
-    S_FSRS.taud_i=t_FS
-    S_FSRS.V_i=-80*mV
-    
-    S_FSFS=Synapses(FS,FS,model='IsynFS_LIP_sup'+eq_syn,method='exact')
-    S_FSFS.connect(j='i')
-    S_FSFS.g_i=2* msiemens * cm **-2
-    S_FSFS.taur_i=0.25*ms
-    S_FSFS.taud_i=t_FS
-    S_FSFS.V_i=-75*mV
-    
-    S_FSSI=Synapses(FS,SI,model='IsynFS_LIP_sup'+eq_syn,method='exact')
-    S_FSSI.connect()
-    S_FSSI.g_i=0.4* msiemens * cm **-2
-    S_FSSI.taur_i=0.25*ms
-    S_FSSI.taud_i=t_FS
-    S_FSSI.V_i=-80*mV
-    
-    S_SIRS=Synapses(SI,RS,model='IsynSI_LIP_sup'+eq_syn,method='exact')
-    S_SIRS.connect()
-    S_SIRS.g_i=2* msiemens * cm **-2
-    S_SIRS.taur_i=0.25*ms
-    S_SIRS.taud_i=t_SI
-    S_SIRS.V_i=-80*mV
-    
-    S_SIFS=Synapses(SI,FS,model='IsynSI_LIP_sup'+eq_syn,method='exact')
-    S_SIFS.connect()
-    S_SIFS.g_i=0.2* msiemens * cm **-2
-    S_SIFS.taur_i=0.25*ms
-    S_SIFS.taud_i=t_SI
-    S_SIFS.V_i=-80*mV
-    
-    S_SISI=Synapses(SI,SI,model='IsynSI_LIP_sup'+eq_syn,method='exact')
-    S_SISI.connect(j='i')
-    S_SISI.g_i=7* msiemens * cm **-2
-    S_SISI.taur_i=0.25*ms
-    S_SISI.taud_i=t_SI
-    S_SISI.V_i=-80*mV
+    #### Synapses (taken from FEF visual module).
+
+    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+    S_SIVIP=generate_syn(SI,VIP,'IsynSI_LIP_sup','',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
     
     ##Define gap junctions
     eq_gap='''_post=g_i*(V_post-V_pre) : amp * meter ** -2 (summed)
@@ -138,21 +123,26 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     V1=StateMonitor(RS,'V',record=True)
     V2=StateMonitor(FS,'V',record=True)
     V3=StateMonitor(SI,'V',record=True)
+    V4=StateMonitor(SI,'V',record=True)
+    
     
     R1=SpikeMonitor(RS,record=True)
     R2=SpikeMonitor(FS,record=True)
     R3=SpikeMonitor(SI,record=True)
+    R4=SpikeMonitor(SI,record=True)
     
     I1=StateMonitor(RS,'Isyn',record=True)
     I2=StateMonitor(FS,'Isyn',record=True)
     I3=StateMonitor(SI,'Isyn',record=True)
+    I4=StateMonitor(SI,'Isyn',record=True)
     
-    all_neurons=RS, FS, SI
-    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI
+    all_neurons=RS, FS, SI, #VIP
+    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI, #S_VIPSI, S_SIVIP
     all_synapses=tuple([y for y in all_synapses if y])
     all_gap_junctions=gap_SISI, gap_RSRS
     all_gap_junctions=tuple([y for y in all_gap_junctions if y])
-    all_monitors=V1,V2,V3,R1,R2,R3,I1,I2,I3
+    all_monitors=V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4
+    #all_monitors=V1,V2,V3,R1,R2,R3,I1,I2,I3
 
     return all_neurons,all_synapses,all_gap_junctions,all_monitors    
 
@@ -174,7 +164,7 @@ if __name__=='__main__' :
     t_SI,t_FS=20*msecond,5*msecond
     
     NN=1 #multiplicative factor on the number of neurons
-    N_RS,N_FS,N_SI,N_IB= NN*80,NN*20,NN*20,NN*20 #Number of neurons of each type
+    N_RS,N_FS,N_SI,N_VIP= NN*80,NN*20,NN*20,NN*20 #Number of neurons of RE, TC, and HTC type
     
     net = Network(collect())
     all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(t_SI,t_FS,Nf=NN)
@@ -184,7 +174,7 @@ if __name__=='__main__' :
     net.add(all_gap_junctions)
     net.add(all_monitors)
     
-    V1,V2,V3,R1,R2,R3,I1,I2,I3=all_monitors
+    V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4=all_monitors
     
     prefs.codegen.target = 'cython'  #cython=faster, numpy = default python
 
@@ -193,9 +183,10 @@ if __name__=='__main__' :
     
     
     figure()
-    plot(R1.t,R1.i+40,'r.',label='RS cells')
-    plot(R2.t,R2.i+20,'b.',label='FS cells')
-    plot(R3.t,R3.i,'g.',label='SI cells')
+    plot(R1.t,R1.i+60,'r.',label='RS cells')
+    plot(R2.t,R2.i+40,'b.',label='FS cells')
+    plot(R3.t,R3.i+20,'g.',label='SI cells')
+    plot(R4.t,R4.i,'k.',label='VIP cells')
     xlim(0,runtime/second)
     legend(loc='upper left')
     
@@ -203,41 +194,53 @@ if __name__=='__main__' :
     LFP_V_RS=1/N_RS*sum(V1.V,axis=0)[min_t:]
     LFP_V_FS=1/N_FS*sum(V2.V,axis=0)[min_t:]
     LFP_V_SI=1/N_SI*sum(V3.V,axis=0)[min_t:]
+    LFP_V_VIP=1/N_VIP*sum(V4.V,axis=0)[min_t:]
     
     f,Spectrum_LFP_V_RS=signal.periodogram(LFP_V_RS, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_FS=signal.periodogram(LFP_V_FS, 100000,'flattop', scaling='spectrum')
     f,Spectrum_LFP_V_SI=signal.periodogram(LFP_V_SI, 100000,'flattop', scaling='spectrum')
+    f,Spectrum_LFP_V_VIP=signal.periodogram(LFP_V_VIP, 100000,'flattop', scaling='spectrum')
     
     figure()
-    subplot(321)
+    subplot(421)
     plot((V1.t/second)[min_t:],LFP_V_RS)
     ylabel('LFP')
     title('RS cell')
-    subplot(323)
+    subplot(423)
     plot((V1.t/second)[min_t:],LFP_V_FS)
     ylabel('LFP')
     title('FS cell')
-    subplot(325)
+    subplot(425)
     plot((V1.t/second)[min_t:],LFP_V_SI)
     ylabel('LFP')
     title('SI cell')
+    subplot(427)
+    plot((V1.t/second)[min_t:],LFP_V_VIP)
+    ylabel('LFP')
+    title('VIP cell')
     
-    subplot(322)
+    subplot(422)
     plot(f,Spectrum_LFP_V_RS)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,50)
     title('RS cell')
-    subplot(324)
+    subplot(424)
     plot(f,Spectrum_LFP_V_FS)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,50)
     title('FS cell')
-    subplot(326)
+    subplot(426)
     plot(f,Spectrum_LFP_V_SI)
     ylabel('Spectrum')
     yticks([],[])
     xlim(0,50)
     title('SI cell')
+    subplot(428)
+    plot(f,Spectrum_LFP_V_VIP)
+    ylabel('Spectrum')
+    yticks([],[])
+    xlim(0,50)
+    title('VIP cell')
     
