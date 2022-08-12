@@ -496,7 +496,7 @@ def run_one_simulation(simu,path,index_var):
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
-        input_beta2_FS_SI=True
+        input_beta2_FS_SI=False
         input_thalamus_gran=False
         gFS=0* msiemens * cm **-2
         ginp_SI=0* msiemens * cm **-2
