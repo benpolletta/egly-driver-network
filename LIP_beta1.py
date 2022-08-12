@@ -34,8 +34,8 @@ def create_beta1_network(t_SI,t_FS,Nf=1):
     
     print(t_SI,t_FS)
     
-    all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(t_SI,t_FS,Nf)
-    RS, FS, SI=all_neurons
+    all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(kainate,version,Nf)
+    RS, FS, SI, VIP=all_neurons
     
     ##Define neuron groups 
     IB_soma=NeuronGroup(N_IB,eq_IB_soma,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
@@ -96,31 +96,37 @@ def create_beta1_network(t_SI,t_FS,Nf=1):
     
     S_SIIB=Synapses(SI,IB_ad,model='IsynSI_LIP_sup'+eq_syn,method='exact')
     S_SIIB.connect('i//10==j//10')
-    S_SIIB.g_i=0.4* msiemens * cm **-2
+    S_SIIB.g_i=2*0.4* msiemens * cm **-2
     S_SIIB.taur_i=0.25*ms
     S_SIIB.taud_i=t_SI
     S_SIIB.V_i=-80*mV
     
     S_IBFS=Synapses(IB_axon,FS,model='IsynIB_LIP'+eq_syn,method='exact')
     S_IBFS.connect('i//10==j//10')
-    S_IBFS.g_i=0.08* msiemens * cm **-2
+    S_IBFS.g_i=2*0.08* msiemens * cm **-2
     S_IBFS.taur_i=0.125*ms
     S_IBFS.taud_i=1*ms
     S_IBFS.V_i=0*mV
     
     S_IBSI=Synapses(IB_axon,SI,model='IsynIB_LIP'+eq_syn,method='exact')
     S_IBSI.connect('i//10==j//10')
-    S_IBSI.g_i=0.045* msiemens * cm **-2
+    S_IBSI.g_i=2*0.045* msiemens * cm **-2
     S_IBSI.taur_i=1.25*ms
     S_IBSI.taud_i=50*ms
     S_IBSI.V_i=0*mV
     
     S_IBIB=Synapses(IB_axon,IB_bd,model='IsynIB_LIP'+eq_syn,method='exact')
-    S_IBIB.connect()
-    S_IBIB.g_i=1/500* msiemens * cm **-2
+    S_IBIB.connect('i//10==j//10')
+    S_IBIB.g_i=2*1/500* msiemens * cm **-2
     S_IBIB.taur_i=0.25*ms  #0.5 in Mark
     S_IBIB.taud_i=100*ms
     S_IBIB.V_i=0*mV
+
+    S_IBVIP.g_i=1.25* msiemens * cm **-2
+    S_IBVIP.taur_i=1.25*ms
+    S_IBVIP.taud_i=50*ms
+    S_IBVIP.V_i=0*mV
+    
     
     
     ##Define gap junctions
@@ -165,7 +171,7 @@ def create_beta1_network(t_SI,t_FS,Nf=1):
     I5bd=StateMonitor(IB_bd,'Isyn',record=True)
 
     new_neurons=IB_soma,IB_axon,IB_bd,IB_ad
-    new_synapses=S_RSIB_AMPA,S_RSIB_NMDA, S_SIIB, S_IBFS, S_IBSI, S_IBIB, #S_IBVIP
+    new_synapses=S_RSIB_AMPA,S_RSIB_NMDA, S_SIIB, S_IBFS, S_IBSI, S_IBIB, S_IBVIP
     new_synapses=tuple([y for y in new_synapses if y])
     new_gap_junctions=gapIB_SomaAd,gapIB_SomaBd,gapIB_SomaAxon,gapIB_AdSoma,gapIB_BdSoma,gapIB_AxonSoma,gap_IBIB
     new_monitors=V5,R5,I5s,I5a,I5ad,I5bd

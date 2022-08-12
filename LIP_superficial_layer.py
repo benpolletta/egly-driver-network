@@ -89,16 +89,16 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     sifs_g_i=0.2* msiemens * cm **-2
     sisi_g_i=7* msiemens * cm **-2
 
-    S_RSFS=generate_syn(RS,FS,'IsynRS_LIP_sup','i//10==j//10',rsfs_g_i,0.125*ms,1*ms,0*mV)
-    S_RSSI=generate_syn(RS,SI,'IsynRS_LIP_sup','i//10==j//10',rssi_g_i,1.25*ms,1*ms,0*mV)
+    S_RSFS=generate_syn(RS,FS,'IsynRS_LIP_sup','i//10==j//10',2*rsfs_g_i,0.125*ms,1*ms,0*mV)
+    S_RSSI=generate_syn(RS,SI,'IsynRS_LIP_sup','i//10==j//10',2*rssi_g_i,1.25*ms,1*ms,0*mV)
     
-    S_FSRS=generate_syn(FS,RS,'IsynFS_LIP_sup','i//10==j//10',fsrs_g_i,0.25*ms,t_FS,-80*mV)
-    S_FSFS=generate_syn(FS,FS,'IsynFS_LIP_sup','j==i',fsfs_g_i,0.25*ms,t_FS,-75*mV)
-    S_FSSI=generate_syn(FS,SI,'IsynFS_LIP_sup','i//10==j//10',fssi_g_i,0.25*ms,t_FS,-80*mV)
+    S_FSRS=generate_syn(FS,RS,'IsynFS_LIP_sup','i//10==j//10',2*fsrs_g_i,0.25*ms,t_FS,-80*mV)
+    S_FSFS=generate_syn(FS,FS,'IsynFS_LIP_sup','j==i',2*fsfs_g_i,0.25*ms,t_FS,-75*mV)
+    S_FSSI=generate_syn(FS,SI,'IsynFS_LIP_sup','i//10==j//10',2*fssi_g_i,0.25*ms,t_FS,-80*mV)
     
-    S_SIRS=generate_syn(SI,RS,'IsynSI_LIP_sup','i//10==j//10',sirs_g_i,0.25*ms,t_SI,-80*mV)
-    S_SIFS=generate_syn(SI,FS,'IsynSI_LIP_sup','i//10==j//10',sifs_g_i,0.25*ms,t_SI,-80*mV)
-    S_SISI=generate_syn(SI,SI,'IsynSI_LIP_sup','j==i',sisi_g_i,0.25*ms,t_SI,-80*mV)
+    S_SIRS=generate_syn(SI,RS,'IsynSI_LIP_sup','i//10==j//10',2*sirs_g_i,0.25*ms,t_SI,-80*mV)
+    S_SIFS=generate_syn(SI,FS,'IsynSI_LIP_sup','i//10==j//10',2*sifs_g_i,0.25*ms,t_SI,-80*mV)
+    S_SISI=generate_syn(SI,SI,'IsynSI_LIP_sup','j==i',2*sisi_g_i,0.25*ms,t_SI,-80*mV)
     
     #### Synapses (taken from FEF visual module).
 
@@ -123,21 +123,21 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     V1=StateMonitor(RS,'V',record=True)
     V2=StateMonitor(FS,'V',record=True)
     V3=StateMonitor(SI,'V',record=True)
-    V4=StateMonitor(SI,'V',record=True)
+    V4=StateMonitor(VIP,'V',record=True)
     
     
     R1=SpikeMonitor(RS,record=True)
     R2=SpikeMonitor(FS,record=True)
     R3=SpikeMonitor(SI,record=True)
-    R4=SpikeMonitor(SI,record=True)
+    R4=SpikeMonitor(VIP,record=True)
     
     I1=StateMonitor(RS,'Isyn',record=True)
     I2=StateMonitor(FS,'Isyn',record=True)
     I3=StateMonitor(SI,'Isyn',record=True)
-    I4=StateMonitor(SI,'Isyn',record=True)
+    I4=StateMonitor(VIP,'Isyn',record=True)
     
-    all_neurons=RS, FS, SI, #VIP
-    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI, #S_VIPSI, S_SIVIP
+    all_neurons=RS, FS, SI, VIP
+    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI, S_VIPSI, S_SIVIP
     all_synapses=tuple([y for y in all_synapses if y])
     all_gap_junctions=gap_SISI, gap_RSRS
     all_gap_junctions=tuple([y for y in all_gap_junctions if y])

@@ -115,7 +115,7 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
         if connection_pattern=='':
             S.connect()
         else :
-            S.connect(j=connection_pattern, skip_if_invalid=True)
+            S.connect(condition=connection_pattern, skip_if_invalid=True)
         S.g_i=g_i
         S.taur_i=taur_i
         S.taud_i=taud_i
@@ -416,7 +416,7 @@ def run_one_simulation(simu,path,index_var):
     net = Network(collect())
     
     print('Network setup')
-    all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
+    all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase,target_time)
     V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,Is,I5a,I5ad,I5bd,R6,R7,R8,V6,V7,V8,inpmon,inpIBmon=all_monitors
     
     
@@ -534,7 +534,7 @@ def run_one_simulation(simu,path,index_var):
 
     
 if __name__=='__main__':
-        
+      
     runtime=1*second
     all_theta=['good','bad'] 
     all_t_SOM=[20*msecond]
