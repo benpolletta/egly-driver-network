@@ -186,7 +186,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
         if connection_pattern=='':
             S.connect()
         else :
-            S.connect(j=connection_pattern, skip_if_invalid=True)
+            S.connect(condition=connection_pattern, skip_if_invalid=True)
         S.g_i=g_i
         S.taur_i=taur_i
         S.taud_i=taud_i
@@ -492,6 +492,7 @@ def run_one_simulation(simu,path,index_var):
         thal_cond=2* msiemens * cm **-2
         kainate='low'
         input_mixed=False
+        target_on=False
         
     if theta_phase=='good':
 #        input_beta2_IB=True
@@ -505,6 +506,7 @@ def run_one_simulation(simu,path,index_var):
         thal_cond=thal
         kainate='low'
         input_mixed=False
+        target_on=False
         
     if theta_phase=='mixed':
         input_mixed=True
@@ -516,11 +518,12 @@ def run_one_simulation(simu,path,index_var):
         input_beta2_FS_SI=False
         input_thalamus_gran=False
         kainate='low'
+        target_on=True
     
     net = Network(collect())
     
     print('Network setup')
-    all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase)
+    all_neurons, all_synapses, all_gap_junctions, all_monitors=make_full_network(syn_cond,J,thal,theta_phase,target_time)
     V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,Is,I5a,I5ad,I5bd,R6,R7,R8,V6,V7,V8,inpmon,inpIBmon=all_monitors
     
     
@@ -841,7 +844,7 @@ if __name__=='__main__':
     all_theta=['good']
 #    all_theta=['mixed','mixed','mixed','mixed','mixed']
     
-    all_target_time=800*ms
+    all_target_time=[800*ms]
     
     #FLee=(0.05*mS/cm**2)/(0.4*uS/cm**2)*0.5   
     #all_SIdFSg=[1*msiemens * cm **-2]
