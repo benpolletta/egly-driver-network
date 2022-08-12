@@ -30,7 +30,7 @@ def create_Mark_Alex_network(kainate,version,Nf=1):
     all_neurons,all_synapses,all_gap_junctions,all_monitors=create_superficial_layer(kainate,version,Nf)
     RS, FS, SI, VIP=all_neurons
     #RS, FS, SI=all_neurons
-    
+
     #Single column network
     
     ##Define neuron groups 
