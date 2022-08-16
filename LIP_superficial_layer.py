@@ -55,7 +55,8 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     
     VIP=NeuronGroup(N_VIP,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-90*mvolt+10*rand()*mvolt'
-    VIP.Iapp='3 * uA * cmeter ** -2' #article=code=35
+    #3VIP.Iapp='3 * uA * cmeter ** -2' #article=code=35
+    VIP.Iapp='5.375 * uA * cmeter ** -2' #article=code=35 
     
     ##Define synapses
     eq_syn='''_post=s_i*g_i*(V_post-V_i) : amp * meter ** -2 (summed)
