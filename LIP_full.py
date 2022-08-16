@@ -346,7 +346,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
         S_in_target_SI.connect(j='i')
         SI.ginp_SI2=2.5* msiemens * cm **-2
         VIP.ginp_VIP2=2.5* msiemens * cm **-2
-        RS.ginp_RS2=2.5* msiemens * cm **-2
+        # RS.ginp_RS2=2.5* msiemens * cm **-2
     
     if input_mixed:
         E_gran.ginp_RS_good=thal_cond

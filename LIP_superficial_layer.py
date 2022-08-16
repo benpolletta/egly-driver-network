@@ -70,7 +70,7 @@ def create_superficial_layer(kainate,version,Nf=1):
     
     VIP=NeuronGroup(N_VIP,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-90*mvolt+10*rand()*mvolt'
-    VIP.Iapp='3 * uA * cmeter ** -2' #article=code=35   
+    VIP.Iapp='5.375 * uA * cmeter ** -2' #article=code=35   
 
     
     ##Synapses
