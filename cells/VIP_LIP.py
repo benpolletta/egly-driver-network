@@ -40,9 +40,9 @@ Iapp2=sinp*ginpVIP*(V-Vrev_inp) : amp * meter ** -2
     ginpVIP = ginp_VIP_good* int(sin(2*pi*t*4*Hz)>0) + ginp_VIP_bad* int(sin(2*pi*t*4*Hz)<=0) : siemens * meter **-2
     ginp_VIP_good : siemens * meter **-2
     ginp_VIP_bad : siemens * meter **-2
-Iapp3=sinp2*ginp_VIP2*(V-Vrev_inp) : amp * meter ** -2
-    dsinp2/dt=-sinp2/taudinp + (1-sinp2)/taurinp*0.5*(1+tanh(Vinp2/10/mV)) : 1
-    dVinp2/dt=1/tauinp*(Vlow-Vinp2) : volt
+Iapp3=sinp2*ginp_VIP2*(V-Vrev_inp2) : amp * meter ** -2
+    dsinp2/dt=-sinp2/taudinp2 + (1-sinp2)/taurinp2*0.5*(1+tanh(Vinp2/10/mV)) : 1
+    dVinp2/dt=1/tauinp2*(Vlow-Vinp2) : volt
     ginp_VIP2 : siemens * meter **-2
 IsynRS_LIP_sup : amp * meter ** -2
 IsynSI_LIP_sup : amp * meter ** -2
@@ -52,6 +52,15 @@ IsynFS_LIP_gran : amp * meter ** -2
 IsynIB_LIP : amp * meter ** -2
 Isyn_mdPul : amp * meter ** -2
 Isyn_FEF : amp * meter ** -2
+Vrev_inp : volt
+Vlow : volt
+taudinp : second
+taurinp : second
+tauinp : second
+Vrev_inp2 : volt
+taudinp2 : second
+taurinp2 : second
+tauinp2 : second
 '''
 
 
@@ -71,29 +80,31 @@ if __name__=='__main__' :
     
     VIP=NeuronGroup(1,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-63*mvolt'
-    VIP.Iapp='8 * uA * cmeter ** -2'
+    VIP.Iapp='1 * uA * cmeter ** -2'
     
-#    def generate_spike_timing(N,f,start_time,end_time=runtime):
-#        list_time_and_i=[]
-#        for i in range(N):
-#            list_time=[(start_time,i)]
-#            next_spike=list_time[-1][0]+(1+0.01*rand())/f
-#            while next_spike<end_time:
-#                list_time.append((next_spike,i))
-#                next_spike=list_time[-1][0]+(1+0.01*rand())/f
-#            list_time_and_i+=list_time
-#        return array(list_time_and_i)
-#
-#
-#    VIP.ginp_VIP_good='8.5 * msiemens * cm **-2'
-#    VIP.ginp_VIP_bad='8.5 * msiemens * cm **-2'
-#    f_in=50*Hz
-#    inputs_topdown3=generate_spike_timing(1,f_in,0*ms,end_time=3000*ms)
-#
-#    G_topdown3 = SpikeGeneratorGroup(1, inputs_topdown3[:,1], inputs_topdown3[:,0]*second)
-#    topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
-#    topdown_in3.connect(j='i')
-#    
+    runtime = 1*second
+    
+    def generate_spike_timing(N,f,start_time,end_time=runtime):
+        list_time_and_i=[]
+        for i in range(N):
+            list_time=[(start_time,i)]
+            next_spike=list_time[-1][0]+(1+0.01*rand())/f
+            while next_spike<end_time:
+                list_time.append((next_spike,i))
+                next_spike=list_time[-1][0]+(1+0.01*rand())/f
+            list_time_and_i+=list_time
+        return array(list_time_and_i)
+
+    VIP.ginp_VIP_good='0 * msiemens * cm **-2' # '8.5 * msiemens * cm **-2'
+    VIP.ginp_VIP_bad='0 * msiemens * cm **-2' # '8.5 * msiemens * cm **-2'
+    VIP.ginp_VIP2 = '0 * msiemens * cm **-2'
+    # f_in=50*Hz
+    # inputs_topdown3=generate_spike_timing(1,f_in,0*ms,end_time=3000*ms)
+
+    # G_topdown3 = SpikeGeneratorGroup(1, inputs_topdown3[:,1], inputs_topdown3[:,0]*second)
+    # topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
+    # topdown_in3.connect(j='i')
+    
     
     V1=StateMonitor(VIP,'V',record=[0])
     
@@ -101,7 +112,7 @@ if __name__=='__main__' :
 #    I2=StateMonitor(FS,'INa',record=[0])
 #    I3=StateMonitor(FS,'IK',record=[0])
     
-    run(1*second)
+    run(runtime)
     
     figure()
     plot(V1.t/second,V1.V[0]/volt)
