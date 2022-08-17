@@ -123,11 +123,11 @@ def create_superficial_layer(kainate,version,Nf=1):
     
     #### Synapses (taken from FEF visual module).
 
-#    S_VIPSI=generate_syn(VIP,SI,'IsynSI_FEF_VM','i//10==j//10',0.7* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
-    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
-    S_VIPFS=generate_syn(VIP,FS,'IsynVIP_LIP_sup','i//10==j//10',0.01*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
+    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0.7* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
+#    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+    S_VIPFS=generate_syn(VIP,FS,'IsynVIP_LIP_sup','i//10==j//10',0*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
     S_SIVIP=generate_syn(SI,VIP,'IsynSI_LIP_sup','',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
-    S_VIPVIP=generate_syn(VIP,VIP,'IsynVIP_LIP_sup','i//10==j//10',0.1*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
+    S_VIPVIP=generate_syn(VIP,VIP,'IsynVIP_LIP_sup','i//10==j//10',0*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
     
     eq_gap='''_post=g_i*(V_post-V_pre) : amp * meter ** -2 (summed)
         g_i : siemens * meter**-2

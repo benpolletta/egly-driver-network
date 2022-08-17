@@ -86,8 +86,8 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
-        input_beta2_FS_SI=False #True
-        input_thalamus_gran=False #True
+        input_beta2_FS_SI=True
+        input_thalamus_gran=True
         gFS=0* msiemens * cm **-2
         SI.ginp_SI=0* msiemens * cm **-2
         thal_cond=2* msiemens * cm **-2
@@ -206,6 +206,8 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     S_EgranRS=generate_syn(E_gran,RS,'IsynRS_LIP_gran','i//10==j//40',2*gRSgRSs,0.125*ms,1*ms,0*mV)
     
     S_EgranIB=generate_syn(E_gran,IB_ad,'IsynRS_LIP_gran','i//10==j//10',2*0.212*usiemens * cm **-2*FLee,0.125*ms,1*ms,0*mV)
+    
+    S_EgranVIP=generate_syn(E_gran,VIP,'IsynRS_LIP_gran','i//10==j//10',2*gRSgFSg,0.125*ms,1*ms,0*mV)
     
     #From FS (granular layer) cells, normal timescale
     #S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFSgran','',1* usiemens * cm **-2*FLee,0.25*ms,5*ms,-80*mV)
@@ -346,9 +348,16 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
         S_in_target_SI.connect(j='i')
         S_in_target_RS=Synapses(Poisson_target,RS,on_pre='Vinp2=Vhigh')
         S_in_target_RS.connect(j='i')
-        SI.ginp_SI2=2.5* msiemens * cm **-2
-        VIP.ginp_VIP2=10* msiemens * cm **-2
-        RS.ginp_RS2=2.5* msiemens * cm **-2
+        S_in_target_Eg=Synapses(Poisson_target,E_gran,on_pre='Vinp2=Vhigh')
+        S_in_target_Eg.connect(j='i')
+        # S_in_target_FSg=Synapses(Poisson_target,FS_gran,on_pre='Vinp2=Vhigh')
+        # S_in_target_FSg.connect(j='i')
+        
+        target_multiplier = 2
+        SI.ginp_SI2=target_multiplier*2.5* msiemens * cm **-2
+        VIP.ginp_VIP2=target_multiplier*3* msiemens * cm **-2
+        RS.ginp_RS2=target_multiplier*2.5* msiemens * cm **-2
+        E_gran.ginp_RS2=target_multiplier*2.5* msiemens * cm **-2
     
     if input_mixed:
         E_gran.ginp_RS_good=thal_cond
@@ -432,7 +441,7 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     
     g_inputs=[G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2,Poisson_target]
     g_inputs=[y for y in g_inputs if y]
-    syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2,S_in_target_VIP,S_in_target_SI,S_in_target_RS]
+    syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2,S_in_target_VIP,S_in_target_SI,S_in_target_RS,S_in_target_Eg,S_EgranVIP]
     syn_inputs=[y for y in syn_inputs if y]
     
 #    print(len(g_inputs))
