@@ -125,7 +125,7 @@ def create_beta1_network(t_SI,t_FS,Nf=1):
     S_IBVIP=Synapses(IB_axon,VIP,model='IsynIB_LIP'+eq_syn,method='exact')
     S_IBVIP.connect('i//10==j//10')
 #    S_IBVIP.g_i=0.45* msiemens * cm **-2*int(version=='Alex')+(0.4*msiemens * cm **-2)*int(version=='Mark')+(0.02*msiemens * cm **-2)*int(version=='Mark/cell')
-    S_IBVIP.g_i=0.05* msiemens * cm **-2
+    S_IBVIP.g_i=0.0225* msiemens * cm **-2
     S_IBVIP.taur_i=1.25*ms
     S_IBVIP.taud_i=50*ms
     S_IBVIP.V_i=0*mV

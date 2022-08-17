@@ -57,7 +57,49 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,I5s,I5a,I5ad,I5IBbd=all_monitors
     RS, FS, SI, VIP, IB_soma, IB_axon, IB_bd, IB_ad =all_neurons
+<<<<<<< HEAD
     
+=======
+   
+    if theta_phase=='bad':
+        input_beta2_IB=False
+        input_beta2_RS=False
+        input_beta2_FS_SI=False #True
+        input_thalamus_gran=False #True
+        gFS=0* msiemens * cm **-2
+        SI.ginp_SI=0* msiemens * cm **-2
+        thal_cond=2* msiemens * cm **-2
+        input_mixed=False
+        target_on=True
+        
+        
+    if theta_phase=='good':
+        input_beta2_IB=True
+        IB_bd.ginp_IB=500* msiemens * cm **-2
+#        IB_bd.ginp_IB=0* msiemens * cm **-2
+        input_beta2_RS=False
+        input_beta2_FS_SI=False
+        input_thalamus_gran=True
+        thal_cond=thal
+#        thal_cond=thal*2754.660086037123/12782.0904181147
+#        thal_cond=thal*2754.660086037123/139.46773954954165
+        input_mixed=False
+        target_on=True
+        
+    if theta_phase=='mixed':
+        input_mixed=True
+        IB_bd.ginp_IB=500* msiemens * cm **-2
+        input_beta2_IB=False
+        input_beta2_RS=False
+        input_beta2_RS=False
+        input_beta2_FS_SI=False
+        input_thalamus_gran=False
+        thal_cond=thal
+        target_on=True
+        
+#    print(input_mixed,input_beta2_IB,input_beta2_RS,input_beta2_FS_SI,input_thalamus_gran)
+        
+>>>>>>> Tuning parameters.
     prefs.codegen.target = 'numpy'
     defaultclock.dt = 0.01*ms
     
@@ -419,6 +461,7 @@ def run_one_simulation(simu,path,index_var):
     syn_cond,J,thal,theta_phase,target_time,index=simu
     print('Simulation '+str(index))
     
+
     net = Network(collect())
     
     print('Network setup')
