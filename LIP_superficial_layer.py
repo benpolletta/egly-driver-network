@@ -53,10 +53,9 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     SI.mAR = '0.02+0.04*rand()'
     SI.J='35* uA * cmeter ** -2' 
     
-    VIP=NeuronGroup(N_VIP,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    VIP=NeuronGroup(N_VIP,eq_VIP,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-90*mvolt+10*rand()*mvolt'
-    #3VIP.Iapp='3 * uA * cmeter ** -2' #article=code=35
-    VIP.Iapp='5.375 * uA * cmeter ** -2' #article=code=35 
+    VIP.Iapp='5 * uA * cmeter ** -2' #article=code=35   
     
     ##Define synapses
     eq_syn='''_post=s_i*g_i*(V_post-V_i) : amp * meter ** -2 (summed)
@@ -90,23 +89,25 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     sifs_g_i=0.2* msiemens * cm **-2
     sisi_g_i=7* msiemens * cm **-2
 
-    S_RSFS=generate_syn(RS,FS,'IsynRS_LIP_sup','i//10==j//10',2*rsfs_g_i,0.125*ms,1*ms,0*mV)
-    S_RSSI=generate_syn(RS,SI,'IsynRS_LIP_sup','i//10==j//10',2*rssi_g_i,1.25*ms,1*ms,0*mV)
+    S_RSFS=generate_syn(RS,FS,'IsynRS_LIP_sup','i//40==j//10',2*rsfs_g_i,0.125*ms,1*ms,0*mV)
+    S_RSSI=generate_syn(RS,SI,'IsynRS_LIP_sup','i//40==j//10',2*rssi_g_i,1.25*ms,1*ms,0*mV)
     
-    S_FSRS=generate_syn(FS,RS,'IsynFS_LIP_sup','i//10==j//10',2*fsrs_g_i,0.25*ms,t_FS,-80*mV)
+    S_FSRS=generate_syn(FS,RS,'IsynFS_LIP_sup','i//10==j//40',2*fsrs_g_i,0.25*ms,t_FS,-80*mV)
     S_FSFS=generate_syn(FS,FS,'IsynFS_LIP_sup','j==i',2*fsfs_g_i,0.25*ms,t_FS,-75*mV)
     S_FSSI=generate_syn(FS,SI,'IsynFS_LIP_sup','i//10==j//10',2*fssi_g_i,0.25*ms,t_FS,-80*mV)
     
-    S_SIRS=generate_syn(SI,RS,'IsynSI_LIP_sup','i//10==j//10',2*sirs_g_i,0.25*ms,t_SI,-80*mV)
+    S_SIRS=generate_syn(SI,RS,'IsynSI_LIP_sup','i//10==j//40',2*sirs_g_i,0.25*ms,t_SI,-80*mV)
     S_SIFS=generate_syn(SI,FS,'IsynSI_LIP_sup','i//10==j//10',2*sifs_g_i,0.25*ms,t_SI,-80*mV)
     S_SISI=generate_syn(SI,SI,'IsynSI_LIP_sup','j==i',2*sisi_g_i,0.25*ms,t_SI,-80*mV)
     
     #### Synapses (taken from FEF visual module).
 
-    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
+#    S_VIPSI=generate_syn(VIP,SI,'IsynSI_FEF_VM','i//10==j//10',0.7* msiemens * cm **-2,0.25*ms,20*ms,-80*mV)
+    S_VIPSI=generate_syn(VIP,SI,'IsynVIP_LIP_sup','i//10==j//10',1.5* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+    S_VIPFS=generate_syn(VIP,FS,'IsynVIP_LIP_sup','i//10==j//10',0.1*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
     S_SIVIP=generate_syn(SI,VIP,'IsynSI_LIP_sup','',0.01* msiemens * cm **-2,0.25*ms,20*ms,-80*mV) 
+    S_VIPVIP=generate_syn(VIP,VIP,'IsynVIP_LIP_sup','i//10==j//10',0.1*msiemens*cm**-2,0.25*ms,20*ms,-80*mV)
     
-    ##Define gap junctions
     eq_gap='''_post=g_i*(V_post-V_pre) : amp * meter ** -2 (summed)
         g_i : siemens * meter**-2
     '''
@@ -138,7 +139,7 @@ def create_superficial_layer(t_SI,t_FS,Nf=1):
     I4=StateMonitor(VIP,'Isyn',record=True)
     
     all_neurons=RS, FS, SI, VIP
-    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI, S_VIPSI, S_SIVIP
+    all_synapses=S_RSRS, S_RSFS, S_RSSI, S_FSRS, S_FSFS, S_FSSI, S_SIRS, S_SIFS, S_SISI, S_VIPSI, S_SIVIP, S_VIPVIP
     all_synapses=tuple([y for y in all_synapses if y])
     all_gap_junctions=gap_SISI, gap_RSRS
     all_gap_junctions=tuple([y for y in all_gap_junctions if y])
