@@ -10,7 +10,7 @@ from brian2 import *
 
 defaultclock.dt = 0.01*ms
 
-eq_VIP_vis='''
+eq_VIP='''
 dV/dt = (1/Cm)*(-INa-IK-ID-IL-Isyn+Irand+Iapp-Iapp2-Iapp3) : volt
     
 INa=gna*h*(minf*minf*minf)*(V-Ena) : amp * meter ** -2
@@ -33,34 +33,25 @@ ID=gd*a*a*a*b*(V-Ek) : amp * meter ** -2
 IL=gl*(V-El) : amp * meter ** -2
 Irand=0*4*sqrt(0.05)*rand()*mamp * cmeter ** -2 : amp * meter ** -2 (constant over dt)
 Iapp : amp * meter ** -2 
-Isyn=IsynRS_LIP_sup+IsynSI_LIP_sup+IsynSI2_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+Isyn_mdPul+Isyn_FEF : amp * meter ** -2
+Isyn=IsynRS_LIP_sup+IsynSI_LIP_sup+IsynVIP_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+Isyn_mdPul+Isyn_FEF : amp * meter ** -2
 Iapp2=sinp*ginpVIP*(V-Vrev_inp) : amp * meter ** -2
-    dsinp/dt=-sinp/taudinp + (1-sinp)/taurinp*0.5*(1+tanh(Vinp/10/mV)) : 1
-    dVinp/dt=1/tauinp*(Vlow-Vinp) : volt
+    dsinp/dt=-sinp/taudinp2 + (1-sinp)/taurinp2*0.5*(1+tanh(Vinp/10/mV)) : 1
+    dVinp/dt=1/tauinp2*(Vlow-Vinp) : volt
     ginpVIP = ginp_VIP_good* int(sin(2*pi*t*4*Hz)>0) + ginp_VIP_bad* int(sin(2*pi*t*4*Hz)<=0) : siemens * meter **-2
     ginp_VIP_good : siemens * meter **-2
     ginp_VIP_bad : siemens * meter **-2
-Iapp3=sinp2*ginp_VIP2*(V-Vrev_inp2) : amp * meter ** -2
+Iapp3=sinp2*ginp_VIP2*(V-Vrev_inp) : amp * meter ** -2
     dsinp2/dt=-sinp2/taudinp2 + (1-sinp2)/taurinp2*0.5*(1+tanh(Vinp2/10/mV)) : 1
     dVinp2/dt=1/tauinp2*(Vlow-Vinp2) : volt
     ginp_VIP2 : siemens * meter **-2
 IsynRS_LIP_sup : amp * meter ** -2
 IsynSI_LIP_sup : amp * meter ** -2
-IsynSI2_LIP_sup : amp * meter ** -2
+IsynVIP_LIP_sup : amp * meter ** -2
 IsynRS_LIP_gran : amp * meter ** -2
 IsynFS_LIP_gran : amp * meter ** -2
 IsynIB_LIP : amp * meter ** -2
 Isyn_mdPul : amp * meter ** -2
 Isyn_FEF : amp * meter ** -2
-Vrev_inp : volt
-Vlow : volt
-taudinp : second
-taurinp : second
-tauinp : second
-Vrev_inp2 : volt
-taudinp2 : second
-taurinp2 : second
-tauinp2 : second
 '''
 
 
@@ -78,47 +69,58 @@ El  = -70 *mV
 if __name__=='__main__' :
     start_scope()
     
-    VIP=NeuronGroup(1,eq_VIP_vis,threshold='V>-20*mvolt',refractory=3*ms,method='rk4')
+    close('all')
+    Vrev_inp=0*mV
+#    taurinp=0.1*ms
+#    taudinp=0.5*ms
+    taurinp=1*ms
+    taudinp=5*ms
+    tauinp=taudinp
+    Vhigh=0*mV
+    Vlow=-80*mV
+    
+    taurinp2=1*ms
+    taudinp2=5*ms
+    tauinp2=taudinp2
+    
+    VIP=NeuronGroup(20,eq_VIP,threshold='V>0*mvolt',refractory=3*ms,method='rk4')
     VIP.V = '-63*mvolt'
-    VIP.Iapp='1 * uA * cmeter ** -2'
+    VIP.Iapp='i/100 *50 * uA * cmeter ** -2'
+#    VIP.Iapp='0 * uA * cmeter ** -2'
+    VIP.Vinp=Vlow
     
-    runtime = 1*second
+#    G_topdown3 = SpikeGeneratorGroup(1, array([0,0]), array([0.25,0.75])*second)
+#    topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
+#    topdown_in3.connect(j='i')
+#    VIP.ginp_VIP_bad=0* msiemens * cm **-2
+#    VIP.ginp_VIP_good=0* msiemens * cm **-2
     
-    def generate_spike_timing(N,f,start_time,end_time=runtime):
-        list_time_and_i=[]
-        for i in range(N):
-            list_time=[(start_time,i)]
-            next_spike=list_time[-1][0]+(1+0.01*rand())/f
-            while next_spike<end_time:
-                list_time.append((next_spike,i))
-                next_spike=list_time[-1][0]+(1+0.01*rand())/f
-            list_time_and_i+=list_time
-        return array(list_time_and_i)
-
-    VIP.ginp_VIP_good='0 * msiemens * cm **-2' # '8.5 * msiemens * cm **-2'
-    VIP.ginp_VIP_bad='0 * msiemens * cm **-2' # '8.5 * msiemens * cm **-2'
-    VIP.ginp_VIP2 = '0 * msiemens * cm **-2'
-    # f_in=50*Hz
-    # inputs_topdown3=generate_spike_timing(1,f_in,0*ms,end_time=3000*ms)
-
-    # G_topdown3 = SpikeGeneratorGroup(1, inputs_topdown3[:,1], inputs_topdown3[:,0]*second)
-    # topdown_in3=Synapses(G_topdown3,VIP,on_pre='Vinp=Vhigh')
-    # topdown_in3.connect(j='i')
+    V1=StateMonitor(VIP,'V',record=True)
     
-    
-    V1=StateMonitor(VIP,'V',record=[0])
+    R1=SpikeMonitor(VIP,record=True)
     
 #    I1=StateMonitor(FS,'IL',record=[0])
 #    I2=StateMonitor(FS,'INa',record=[0])
 #    I3=StateMonitor(FS,'IK',record=[0])
     
-    run(runtime)
+    run(1*second)
     
     figure()
-    plot(V1.t/second,V1.V[0]/volt)
-    xlabel('Time (s)')
-    ylabel('Membrane potential (V)')
-    title('VIP cell')
+    
+    for i in range(0,20):
+        subplot(10,2,i+1)
+        V = V1[[i]].V/volt
+        plot(V1.t/second,V.transpose())
+        #xlabel('Time (s)')
+        #ylabel('Membrane potential (V)')
+        #title('VIP cell')
+    
+    print(R1.count[0])
+    
+    figure()
+    plot((VIP.Iapp/ (uA * cmeter ** -2)),R1.count/10)
+    xlabel('I (uA * cmeter ** -2)')
+    ylabel('f (Hz)')
     
 #    figure()
 #    plot(I1.t/second,I1.IL[0],label='L')
