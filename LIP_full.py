@@ -57,49 +57,7 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
     all_neurons, all_synapses, all_gap_junctions, all_monitors=create_Mark_Alex_network(kainate,version,Nf=NN)
     V1,V2,V3,V4,R1,R2,R3,R4,I1,I2,I3,I4,V5,R5,I5s,I5a,I5ad,I5IBbd=all_monitors
     RS, FS, SI, VIP, IB_soma, IB_axon, IB_bd, IB_ad =all_neurons
-<<<<<<< HEAD
-    
-=======
-   
-    if theta_phase=='bad':
-        input_beta2_IB=False
-        input_beta2_RS=False
-        input_beta2_FS_SI=False #True
-        input_thalamus_gran=False #True
-        gFS=0* msiemens * cm **-2
-        SI.ginp_SI=0* msiemens * cm **-2
-        thal_cond=2* msiemens * cm **-2
-        input_mixed=False
-        target_on=True
-        
-        
-    if theta_phase=='good':
-        input_beta2_IB=True
-        IB_bd.ginp_IB=500* msiemens * cm **-2
-#        IB_bd.ginp_IB=0* msiemens * cm **-2
-        input_beta2_RS=False
-        input_beta2_FS_SI=False
-        input_thalamus_gran=True
-        thal_cond=thal
-#        thal_cond=thal*2754.660086037123/12782.0904181147
-#        thal_cond=thal*2754.660086037123/139.46773954954165
-        input_mixed=False
-        target_on=True
-        
-    if theta_phase=='mixed':
-        input_mixed=True
-        IB_bd.ginp_IB=500* msiemens * cm **-2
-        input_beta2_IB=False
-        input_beta2_RS=False
-        input_beta2_RS=False
-        input_beta2_FS_SI=False
-        input_thalamus_gran=False
-        thal_cond=thal
-        target_on=True
-        
-#    print(input_mixed,input_beta2_IB,input_beta2_RS,input_beta2_FS_SI,input_thalamus_gran)
-        
->>>>>>> Tuning parameters.
+
     prefs.codegen.target = 'numpy'
     defaultclock.dt = 0.01*ms
     
@@ -165,23 +123,24 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
         return S
     
     #From E (granular layer) cells
-    S_EgranFS=generate_syn(E_gran,FS,'IsynRS_LIP_gran','',2*gRSgFSs,0.125*ms,1*ms,0*mV)
-    S_EgranEgran=generate_syn(E_gran,E_gran,'IsynRS_LIP_gran','',2*gRSgRSg,0.125*ms,1*ms,0*mV)
-    S_EgranFSgran=generate_syn(E_gran,FS_gran,'IsynRS_LIP_gran','',2*gRSgFSg,0.125*ms,1*ms,0*mV)
-    S_EgranRS=generate_syn(E_gran,RS,'IsynRS_LIP_gran','',2*gRSgRSs,0.125*ms,1*ms,0*mV)
-    S_EgranIB=generate_syn(E_gran,IB_ad,'IsynRS_LIP_gran','',2*0.212*usiemens * cm **-2,0.125*ms,1*ms,0*mV)
+    S_EgranFS=generate_syn(E_gran,FS,'IsynRS_LIP_gran','i//10==j//10',2*gRSgFSs,0.125*ms,1*ms,0*mV)
+    S_EgranEgran=generate_syn(E_gran,E_gran,'IsynRS_LIP_gran','i//10==j//10',2*gRSgRSg,0.125*ms,1*ms,0*mV)
+    S_EgranFSgran=generate_syn(E_gran,FS_gran,'IsynRS_LIP_gran','i//10==j//10',2*gRSgFSg,0.125*ms,1*ms,0*mV)
+    S_EgranRS=generate_syn(E_gran,RS,'IsynRS_LIP_gran','i//10==j//40',2*gRSgRSs,0.125*ms,1*ms,0*mV)
+    S_EgranIB=generate_syn(E_gran,IB_ad,'IsynRS_LIP_gran','i//10==j//10',2*0.212*usiemens * cm **-2,0.125*ms,1*ms,0*mV)
+    S_EgranVIP=generate_syn(E_gran,VIP,'IsynRS_LIP_gran','i//10==j//10',2*gRSgFSg,0.125*ms,1*ms,0*mV)
     
     #From FS (granular layer) cells
-    S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFS_LIP_gran','',2*gFSgRSg,0.25*ms,t_FS,-80*mV)
-    S_FSgranFSgran=generate_syn(FS_gran,FS_gran,'IsynFS_LIP_gran','',2*gFSgFSg,0.25*ms,t_FS,-75*mV)
-    S_FSgranRS=generate_syn(FS_gran,RS,'IsynFS_LIP_gran','',2*gFSgRSs,0.25*ms,t_FS,-80*mV)
+    S_FSgranEgran=generate_syn(FS_gran,E_gran,'IsynFS_LIP_gran','i//10==j//10',2*gFSgRSg,0.25*ms,t_FS,-80*mV)
+    S_FSgranFSgran=generate_syn(FS_gran,FS_gran,'IsynFS_LIP_gran','i//10==j//10',2*gFSgFSg,0.25*ms,t_FS,-75*mV)
+    S_FSgranRS=generate_syn(FS_gran,RS,'IsynFS_LIP_gran','i//10==j//40',2*gFSgRSs,0.25*ms,t_FS,-80*mV)
     
     #From IB cells
-    S_IBSIdeep=generate_syn(IB_axon,SI_deep,'IsynIB_LIP','',2*0.01* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
+    S_IBSIdeep=generate_syn(IB_axon,SI_deep,'IsynIB_LIP','i//10==j//10',2*0.01* msiemens * cm **-2,0.125*ms,1*ms,0*mV)
     
     #From deep SOM cells    
-    S_SIdeepIB=generate_syn(SI_deep,IB_bd,'IsynSI_LIP_deep','',2*10* msiemens * cm **-2,0.25*ms,t_SI,-80*mV)
-    S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSI_LIP_deep','',gSIdFSg,2*0.25*ms,t_SI,-80*mV)
+    S_SIdeepIB=generate_syn(SI_deep,IB_bd,'IsynSI_LIP_deep','i//10==j//10',2*10* msiemens * cm **-2,0.25*ms,t_SI,-80*mV)
+    S_SIdeepFSgran=generate_syn(SI_deep,FS_gran,'IsynSI_LIP_deep','i//10==j//10',2*gSIdFSg,0.25*ms,t_SI,-80*mV)
     
     
     def generate_spike_timing(N,f,start_time,end_time=runtime):
@@ -255,9 +214,16 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
         S_in_target_SI.connect(j='i')
         S_in_target_RS=Synapses(Poisson_target,RS,on_pre='Vinp2=Vhigh')
         S_in_target_RS.connect(j='i')
-        SI.ginp_SI2=2.5* msiemens * cm **-2
-        VIP.ginp_VIP2=2.5* msiemens * cm **-2
-        RS.ginp_RS2=2.5* msiemens * cm **-2
+        S_in_target_Eg=Synapses(Poisson_target,E_gran,on_pre='Vinp2=Vhigh')
+        S_in_target_Eg.connect(j='i')
+        # S_in_target_FSg=Synapses(Poisson_target,FS_gran,on_pre='Vinp2=Vhigh')
+        # S_in_target_FSg.connect(j='i')
+        
+        target_multiplier = 2
+        SI.ginp_SI2=target_multiplier*2.5* msiemens * cm **-2
+        VIP.ginp_VIP2=target_multiplier*3* msiemens * cm **-2
+        RS.ginp_RS2=target_multiplier*2.5* msiemens * cm **-2
+        E_gran.ginp_RS2=target_multiplier*2.5* msiemens * cm **-2
 
     if theta_phase=='mixed':
         t0=0*ms
@@ -292,7 +258,7 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
     
     g_inputs=[G_topdown2,G_topdown3,G_lateral,G_lateral2,Poisson_input,Poisson_input2,Poisson_target]
     g_inputs=[y for y in g_inputs if y]
-    syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2,S_in_target_VIP,S_in_target_SI,S_in_target_RS]
+    syn_inputs=[topdown_in2,topdown_in3,lateral_in,lateral_in2,bottomup_in,bottomup_in2,S_in_target_VIP,S_in_target_SI,S_in_target_RS,S_in_target_Eg,S_EgranVIP]
     syn_inputs=[y for y in syn_inputs if y]
     
 
