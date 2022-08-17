@@ -8,10 +8,11 @@ defaultclock.dt = 0.01*ms
 eq_FS_LIP='''
 dV/dt=1/C_FS*(-J-Isyn-Igap-Iran-Iapp-IL-INa-IK) : volt
 J : amp * meter ** -2
-Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
+Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynVIP_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
 IsynRS_LIP_sup : amp * meter ** -2
 IsynFS_LIP_sup : amp * meter ** -2
 IsynSI_LIP_sup : amp * meter ** -2
+IsynVIP_LIP_sup : amp * meter ** -2
 IsynRS_LIP_gran : amp * meter ** -2
 IsynFS_LIP_gran : amp * meter ** -2
 IsynIB_LIP : amp * meter ** -2
