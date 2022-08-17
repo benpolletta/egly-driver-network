@@ -86,8 +86,8 @@ def make_full_network(syn_cond,J,thal,theta_phase,target_time):
     if theta_phase=='bad':
         input_beta2_IB=False
         input_beta2_RS=False
-        input_beta2_FS_SI=True
-        input_thalamus_gran=True
+        input_beta2_FS_SI=False #True
+        input_thalamus_gran=False #True
         gFS=0* msiemens * cm **-2
         SI.ginp_SI=0* msiemens * cm **-2
         thal_cond=2* msiemens * cm **-2
@@ -483,44 +483,44 @@ def run_one_simulation(simu,path,index_var):
     syn_cond,J,thal,theta_phase,target_time,index=simu
     print('Simulation '+str(index))
     
-    if theta_phase=='bad':
-        input_beta2_IB=False
-        input_beta2_RS=False
-        input_beta2_FS_SI=True
-        input_thalamus_gran=True
-        gFS=0* msiemens * cm **-2
-        ginp_SI=0* msiemens * cm **-2
-        ginpSIdeep=0* msiemens * cm **-2
-        thal_cond=2* msiemens * cm **-2
-        kainate='low'
-        input_mixed=False
-        target_on=True
+#     if theta_phase=='bad':
+#         input_beta2_IB=False
+#         input_beta2_RS=False
+#         input_beta2_FS_SI=False #True
+#         input_thalamus_gran=False #True
+#         gFS=0* msiemens * cm **-2
+#         ginp_SI=0* msiemens * cm **-2
+#         ginpSIdeep=0* msiemens * cm **-2
+#         thal_cond=2* msiemens * cm **-2
+#         kainate='low'
+#         input_mixed=False
+#         target_on=True
         
-    if theta_phase=='good':
-#        input_beta2_IB=True
-        input_beta2_IB=False
-        ginp_IB=500* msiemens * cm **-2
-#        ginpSIdeep=500* msiemens * cm **-2
-        ginpSIdeep=0* msiemens * cm **-2
-        input_beta2_RS=False
-        input_beta2_FS_SI=False
-        input_thalamus_gran=True
-        thal_cond=thal
-        kainate='low'
-        input_mixed=False
-        target_on=True
+#     if theta_phase=='good':
+#         input_beta2_IB=True
+# #        input_beta2_IB=False
+#         ginp_IB=500* msiemens * cm **-2
+# #        ginpSIdeep=500* msiemens * cm **-2
+#         ginpSIdeep=0* msiemens * cm **-2
+#         input_beta2_RS=False
+#         input_beta2_FS_SI=False
+#         input_thalamus_gran=True
+#         thal_cond=thal
+#         kainate='low'
+#         input_mixed=False
+#         target_on=True
         
-    if theta_phase=='mixed':
-        input_mixed=True
-        ginp_IB=500* msiemens * cm **-2
-        ginpSIdeep=500* msiemens * cm **-2
-        input_beta2_IB=False
-        input_beta2_RS=False
-        input_beta2_RS=False
-        input_beta2_FS_SI=False
-        input_thalamus_gran=False
-        kainate='low'
-        target_on=True
+#     if theta_phase=='mixed':
+#         input_mixed=True
+#         ginp_IB=500* msiemens * cm **-2
+#         ginpSIdeep=500* msiemens * cm **-2
+#         input_beta2_IB=False
+#         input_beta2_RS=False
+#         input_beta2_RS=False
+#         input_beta2_FS_SI=False
+#         input_thalamus_gran=False
+#         kainate='low'
+#         target_on=True
     
     net = Network(collect())
     
@@ -705,8 +705,8 @@ def run_one_simulation(simu,path,index_var):
     xlabel('Time (s)',fontsize=12)
     ylabel('Neuron index',fontsize=12)
     
-#    N_RS_spikes=zeros_ones_monitor(R1,defaultclock.dt,runtime)
     N_RS_spikes=zeros_ones_monitor(R1,defaultclock.dt,runtime)
+    # N_RS_spikes=zeros_ones_monitor(R4,defaultclock.dt,runtime)
     figure()
     plot(N_RS_spikes)
     f, t, Sxx = signal.spectrogram(array(N_RS_spikes), 100000*Hz,nperseg=20000,noverlap=15000)
