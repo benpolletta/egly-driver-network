@@ -219,7 +219,7 @@ def make_full_network(syn_cond,J,thal,t_SI,t_FS,theta_phase,target_time):
         # S_in_target_FSg=Synapses(Poisson_target,FS_gran,on_pre='Vinp2=Vhigh')
         # S_in_target_FSg.connect(j='i')
         
-        target_multiplier = 2
+        target_multiplier = 1
         SI.ginp_SI2=target_multiplier*2.5* msiemens * cm **-2
         VIP.ginp_VIP2=target_multiplier*3* msiemens * cm **-2
         RS.ginp_RS2=target_multiplier*2.5* msiemens * cm **-2

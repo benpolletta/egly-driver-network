@@ -6,7 +6,7 @@ from brian2 import *
 defaultclock.dt = 0.01*ms
 
 eq_SI_LIP='''
-dV/dt=1/C_SI*(-J-Isyn-Igap-Iran-Iapp-IL-INa-IK-IAR) : volt
+dV/dt=1/C_SI*(-J-Isyn-Igap-Iran-Iapp-Iapp2-IL-INa-IK-IAR) : volt
 J : amp * meter ** -2
 Isyn=IsynRS_LIP_sup+IsynFS_LIP_sup+IsynSI_LIP_sup+IsynVIP_LIP_sup+IsynRS_LIP_gran+IsynFS_LIP_gran+IsynIB_LIP+IsynSI_LIP_deep+Isyn_FEF+Isyn_mdPul : amp * meter ** -2
 IsynRS_LIP_sup : amp * meter ** -2

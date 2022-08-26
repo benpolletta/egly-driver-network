@@ -72,7 +72,7 @@ if __name__=='__main__' :
     FS.V = '-110*mvolt+10*rand()*mvolt'
     FS.h = '0+0.05*rand()'
     FS.m = '0+0.05*rand()'
-    FS.J='5 * uA * cmeter ** -2'
+    FS.J='10 * uA * cmeter ** -2'
     
     V1=StateMonitor(FS,'V',record=[0])
     
