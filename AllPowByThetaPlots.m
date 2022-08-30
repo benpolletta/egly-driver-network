@@ -1,4 +1,4 @@
-function AllPowByThetaPlots
+function AllPowByThetaPlots(prefixes, suffixes, frequencies, cycle_cell)
 % datafile = name of data file
 % fs = sampling freq. of data
 % freqs = vector of frequencies for plot
@@ -7,19 +7,31 @@ function AllPowByThetaPlots
 
 fs = 10^5;
 
-prefixes = {'LIP', 'FEFvm'};
+if nargin < 1, prefixes = []; end
+if isempty(prefixes)
+    prefixes = {'LIP', 'FEFvm'};
+end
 
-frequencies = {9:60, 9:40};
+if nargin < 2, suffixes = []; end
+if isempty(suffixes)
+    suffixes = {'_RS_spikes','_LFP_I_RS', '_LFP_V_RS'};
+end
 
-suffixes = {'_RS_spikes','_LFP_I_RS', '_LFP_V_RS'};
+if nargin < 3, frequencies = []; end
+if isempty(frequencies)
+    frequencies = {9:60, 9:40};
+end
 
-cycle_cell={4, linspace(4,12,52), 6, linspace(6,18,52), 8, linspace(8,24,52)};
+if nargin < 4, cycle_cell = []; end
+if isempty(cycle_cell)
+    cycle_cell={4, linspace(4,12,52), 6, linspace(6,18,52), 8, linspace(8,24,52)};
+end
 
-for p = 1:2
+for p = 1:length(prefixes)
 
-    for s = 1:3
+    for s = 1:length(suffixes)
 
-        for c = 1:6
+        for c = 1:length(cycle_cell)
 
             freqs = frequencies{p};
             no_cycles = cycle_cell{c}(1:min(length(cycle_cell{c}),length(freqs)));
