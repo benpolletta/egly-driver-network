@@ -10,6 +10,7 @@ time = (1:length(data))/fs;
 
 no_thetas = max(time)/.25;
 length_theta = .25*fs;
+theta_phase = 360*time(1:length_theta)/max(time(1:length_theta));
 
 label = sprintf('%s_%.2gto%.2gHz_%.2gto%.2gcyc', datafile, min(freqs), max(freqs), min(no_cycles), max(no_cycles))
 
@@ -29,7 +30,7 @@ ws_folded = reshape(ws, [length_theta, no_thetas, length(freqs)]);
 ws_tmean = squeeze(nanmean(abs(ws_folded), 2));
 
 figure
-imagesc(time(1:length_theta), freqs, ws_tmean')
+imagesc(theta_phase, freqs, ws_tmean')
 axis xy
 set(gca, 'FontSize', 20)
 saveas(gcf, [label, '.fig'])
@@ -38,7 +39,7 @@ ws_mean_mat = ones(size(ws_tmean))*diag(nanmean(ws_tmean));
 ws_pct_tmean = (ws_tmean - ws_mean_mat)./ws_mean_mat;
 
 figure
-imagesc(time(1:length_theta), freqs, ws_pct_tmean')
+imagesc(theta_phase, freqs, ws_pct_tmean')
 axis xy
 set(gca, 'FontSize', 20)
 saveas(gcf, [label, '_pct.fig'])

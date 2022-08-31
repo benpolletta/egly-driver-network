@@ -63,7 +63,7 @@ for p = 1:length(prefixes)
             ws_tmean = squeeze(nanmean(abs(ws_folded), 2));
 
             figure(2*p-1)
-            subplot(3, 6, (s-1)*6+c)
+            subplot(length(prefixes), length(cycle_cell), (s-1)*length(cycle_cell)+c)
             imagesc(time(1:length_theta), freqs, ws_tmean')
             axis xy
             set(gca, 'FontSize', 20)
@@ -72,7 +72,7 @@ for p = 1:length(prefixes)
             ws_pct_tmean = (ws_tmean - ws_mean_mat)./ws_mean_mat;
 
             figure(2*p)
-            subplot(3, 6, (s-1)*6+c)
+            subplot(length(prefixes), length(cycle_cell), (s-1)*length(cycle_cell)+c)
             imagesc(time(1:length_theta), freqs, ws_pct_tmean')
             axis xy
             set(gca, 'FontSize', 20)
