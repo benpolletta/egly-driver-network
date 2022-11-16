@@ -136,14 +136,16 @@ def create_superficial_layer(kainate,version,Nf=1):
     gap_SISI=None
     if version=='Alex':
         gap_SISI=Synapses(SI,SI,model='Igap'+eq_gap,method='exact')
-        gap_SISI.connect()
-        gap_SISI.g_i=0.2* msiemens * cm **-2
+        gap_SISI.connect('i//10==j//10')
+        gap_sisi=0.2* msiemens * cm **-2
+        gap_SISI.g_i=2*gap_sisi
     
     gap_RSRS=None
     if version=='Mark' or version=='Mark/cell' or True:
         gap_RSRS=Synapses(RS,RS,model='Igap'+eq_gap,method='exact')
-        gap_RSRS.connect()
-        gap_RSRS.g_i=0.04* msiemens * cm **-2    
+        gap_RSRS.connect('i//40==j//40')
+        gap_rsrs=0.04* msiemens * cm **-2  
+        gap_RSRS.g_i=2*gap_rsrs
     #    gap_RSRS.g_i=0.01* msiemens * cm **-2   
             
 #     #### Inputs (taken from FEF visual module). 
