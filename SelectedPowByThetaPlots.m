@@ -7,11 +7,11 @@ function SelectedPowByThetaPlots
 
 fs = 10^5;
 
-prefixes = {'mean'}; % {'LIP'}; %, 'FEFvm'};
+prefixes = {'Full_LIP','Full_FEFvm'}; % {'LIP'}; %, 'FEFvm'};
 
-frequencies = {9:100}; % {9:100, 9:40};
+frequencies = {9:100, 9:40};
 
-suffixes = {'_V_RS.txt'}; % {'_LFP_V_RS_mixed'}; %, 'LFP_V_RS'};
+suffixes = {'_LFP_V_RS_mixed', '_LFP_V_RS_mixed'}; %{'_V_RS.txt'}; % , 'LFP_V_RS'};
 
 all_cycles = linspace(4,18,92);
 
@@ -44,7 +44,7 @@ for p = 1:length(prefixes)
     length_theta = .25*fs;
     theta_phase = 360*time(1:length_theta)/max(time(1:length_theta));
     
-    ws_folded = reshape(ws((1:no_thetas)*length_theta, :), [length_theta, no_thetas, length(freqs)]);
+    ws_folded = reshape(ws((length_theta + 1):(no_thetas + 1)*length_theta, :), [length_theta, no_thetas, length(freqs)]);
     ws_tmean = squeeze(nanmean(abs(ws_folded), 2));
     
     ws_mean_mat = ones(size(ws_tmean))*diag(nanmean(ws_tmean));
@@ -55,6 +55,7 @@ for p = 1:length(prefixes)
     axis xy
     set(gca, 'FontSize', 20)
     title(prefixes{p})
+    colorbar
     
 end
 
